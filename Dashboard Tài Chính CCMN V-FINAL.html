@@ -1,0 +1,1336 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>App Dashboard CCMN (Mobile Optimized)</title>
+<style>
+  :root {
+    --bg: #f4f6fb; --surface: #ffffff; --surface-2: #f8fafc; --border: #e2e8f0;
+    --text: #0f172a; --text-dim: #64748b; --accent: #2563eb; --accent-soft: #dbeafe;
+    --green: #16a34a; --green-soft: #dcfce7; --red: #dc2626; --red-soft: #fee2e2;
+    --amber: #d97706; --amber-soft: #fef3c7; --grid: #e2e8f0; --zero-line: #94a3b8;
+    --purple: #8b5cf6; --purple-soft: #ede9fe;
+    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+    --shadow-float: 0 10px 25px -5px rgba(37, 99, 235, 0.4);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0b1220; --surface: #131c2e; --surface-2: #0f1729; --border: #24304a;
+      --text: #e6ebf5; --text-dim: #93a2ba; --accent: #5b9dff; --accent-soft: #16305c;
+      --green: #34d399; --green-soft: #103826; --red: #f87171; --red-soft: #3a1414;
+      --amber: #fbbf24; --amber-soft: #3a2a08; --grid: #24304a; --zero-line: #4a5a78;
+      --purple: #a78bfa; --purple-soft: #2e1065;
+      --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+      --shadow-float: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+    }
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { background: var(--bg); color: var(--text); margin: 0; font-size: 16px; overflow-x: hidden; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; padding-bottom: 80px;}
+  
+  .wrap { max-width: 1200px; margin: 0 auto; padding: 20px 20px 40px; }
+  .header-box { margin-bottom: 20px; }
+  h1 { font-size: 24px; font-weight: 800; margin: 0 0 8px; line-height: 1.3;}
+  .subtitle { color: var(--text-dim); font-size: 14px; margin: 0; }
+  @media(min-width: 768px) { h1 { font-size: 32px; } .subtitle { font-size: 16px; } .header-box {margin-bottom: 30px;} }
+
+  /* CAROUSEL CARDS */
+  .cards-wrapper {
+    display: flex; overflow-x: auto; scroll-snap-type: x mandatory;
+    gap: 16px; margin: 0 -20px 24px -20px; padding: 4px 20px 16px 20px; 
+    -webkit-overflow-scrolling: touch; scrollbar-width: none;
+  }
+  .cards-wrapper::-webkit-scrollbar { display: none; }
+  .cards-wrapper::after { content: ''; flex: 0 0 1px; }
+  
+  .scard {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
+    padding: 20px; display: flex; flex-direction: column; gap: 8px; box-shadow: var(--shadow);
+    flex: 0 0 82vw; scroll-snap-align: start;
+  }
+  .scard .title { font-size: 13px; font-weight: 600; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px;}
+  .scard .value { font-size: 22px; font-weight: 800; }
+  .scard .sub { font-size: 12px; color: var(--text-dim); line-height: 1.4; flex-grow: 1; }
+  .scard .pill { font-size: 12px; padding: 4px 10px; border-radius: 6px; width: fit-content; font-weight: 700; }
+  
+  @media (min-width: 768px) {
+    .cards-wrapper { display: grid; grid-template-columns: repeat(3, 1fr); scroll-snap-type: none; margin: 0 0 32px 0; padding: 0; overflow-x: visible;}
+    .cards-wrapper::after { display: none; }
+    .scard { flex: auto; }
+  }
+  @media (min-width: 1200px) { .cards-wrapper { grid-template-columns: repeat(5, 1fr); } }
+
+  /* TABS BIỂU ĐỒ */
+  .tabs-container { margin-top: 10px; }
+  .tabs-header { 
+      display: flex; gap: 8px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 10px;
+      -webkit-overflow-scrolling: touch; scrollbar-width: none;
+  }
+  .tabs-header::-webkit-scrollbar { display: none; }
+  .tab-btn {
+      background: var(--surface); border: 1px solid var(--border); color: var(--text-dim);
+      padding: 12px 20px; border-radius: 30px; font-size: 14px; font-weight: 700; cursor: pointer;
+      white-space: nowrap; transition: all 0.2s; box-shadow: var(--shadow);
+  }
+  .tab-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+  
+  .tab-content { display: none; animation: fadeIn 0.3s ease; }
+  .tab-content.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+  .card-panel { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 20px; box-shadow: var(--shadow);}
+  .chart-head { margin-bottom: 20px; }
+  .chart-head h2 { font-size: 18px; font-weight: 700; margin: 0 0 6px; }
+  .chart-summary { font-size: 14px; color: var(--text-dim); font-weight: 600; margin-bottom: 12px; }
+  
+  .scroll-hint { font-size: 12px; color: var(--text-dim); font-style: italic; text-align: right; animation: pulse 2s infinite; margin-top: -10px; margin-bottom: 10px;}
+  @media(min-width: 1024px) { .scroll-hint {display: none;} }
+  @keyframes pulse { 0% { opacity: 0.4; } 50% { opacity: 1; } 100% { opacity: 0.4; } }
+
+  /* Pills Chart */
+  .be-pill, .df-pill { font-size: 13px; font-weight: 700; padding: 6px 10px; border-radius: 8px; display: inline-block; margin-bottom: 6px; margin-right: 6px;}
+  .be-pill { background: var(--amber-soft); color: var(--amber); }
+  .df-pill { background: var(--accent-soft); color: var(--accent); }
+  .roi-pill { font-size: 13px; font-weight: 700; padding: 4px 8px; border-radius: 6px; background: var(--surface-2); border: 1px solid var(--border); color: var(--text); margin-left: 6px; display: inline-block;}
+  .roi-infinite { background: var(--purple-soft); color: var(--purple); border-color: var(--purple); }
+  
+  /* SVG & Tooltips */
+  .scrollx { overflow-x: hidden; position: relative; padding-bottom: 10px; }
+  #chart, #inv-chart, #loan-chart { touch-action: none; -webkit-user-select: none; user-select: none; }
+  .tooltip {
+    position: absolute; display: none; background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 14px 16px; box-shadow: 0 15px 30px -5px rgba(0,0,0,0.15);
+    pointer-events: none; font-size: 14px; z-index: 100; white-space: nowrap; 
+  }
+  .tooltip .tt-head { font-weight: 700; color: var(--text); margin-bottom: 8px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+  .tooltip .tt-val { font-weight: 700; }
+
+  /* BOTTOM SHEET */
+  .fab-btn {
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+      background: var(--accent); color: white; border: none; padding: 16px 28px;
+      border-radius: 30px; font-size: 16px; font-weight: 700; box-shadow: var(--shadow-float);
+      z-index: 99; cursor: pointer; display: flex; align-items: center; gap: 8px; width: max-content;
+  }
+  .fab-btn:active { transform: translateX(-50%) scale(0.96); }
+  
+  .overlay {
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(2px); z-index: 1000; opacity: 0; visibility: hidden; transition: all 0.3s;
+  }
+  .settings-wrapper { position: relative; }
+  
+  .subcard { background: var(--surface-2); border: 1px solid var(--border); border-radius: 16px; padding: 20px; margin-bottom: 20px;}
+  .subcard h3 { font-size: 17px; font-weight: 700; color: var(--text-dim); margin: 0 0 20px; display: flex; justify-content: space-between; align-items: center;}
+  
+  @media (max-width: 1023px) {
+      .settings-wrapper {
+          position: fixed; bottom: 0; left: 0; right: 0; background: var(--bg); z-index: 1001;
+          transform: translateY(100%); transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1);
+          max-height: 85vh; overflow-y: auto; padding: 20px; border-radius: 24px 24px 0 0;
+          box-shadow: 0 -10px 40px rgba(0,0,0,0.2);
+      }
+      .settings-wrapper.open { transform: translateY(0); }
+      .overlay.open { opacity: 1; visibility: visible; }
+      .sheet-header {
+          display: flex; justify-content: space-between; align-items: center; position: sticky; top: -20px;
+          background: var(--bg); padding: 20px 0 15px; z-index: 10; border-bottom: 1px solid var(--border);
+          margin-top: -20px; margin-bottom: 20px;
+      }
+      .sheet-header h2 { font-size: 20px; margin: 0; }
+      .close-btn { background: var(--surface-2); border: none; width: 36px; height: 36px; border-radius: 18px; font-size: 18px; font-weight: bold; color: var(--text-dim); cursor: pointer; }
+      .btn-done { background: var(--accent); color: white; border: none; padding: 14px; width: 100%; border-radius: 12px; font-size: 16px; font-weight: bold; margin-top: 10px; margin-bottom: 20px;}
+      .groups { display: block; }
+  }
+  
+  @media (min-width: 1024px) {
+      .fab-btn { display: none; }
+      .overlay { display: none !important; }
+      .settings-wrapper { margin-top: 40px; }
+      .sheet-header { display: none; }
+      .btn-done { display: none; }
+      .groups { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; }
+      .subcard { margin-bottom: 0; }
+  }
+
+  /* Form Elements */
+  .field { margin-bottom: 24px; }
+  .field-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; gap: 8px; }
+  .field-top label { font-size: 14px; font-weight: 600; }
+  .badge { font-size: 13px; font-weight: 700; padding: 4px 10px; border-radius: 8px; color: var(--accent); background: var(--accent-soft); white-space: nowrap; }
+  .field-row { display: flex; align-items: center; gap: 12px; }
+  
+  input[type="range"] {
+    -webkit-appearance: none; appearance: none; flex: 1 1 auto; min-width: 0; height: 8px;
+    border-radius: 999px; background: var(--border); outline: none; display: block;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 24px; height: 24px; border-radius: 999px;
+    background: var(--accent); border: 3px solid var(--surface); box-shadow: 0 2px 4px rgba(0,0,0,0.2); cursor: pointer;
+  }
+  input[type="number"] {
+    width: 100px; flex: 0 0 auto; font-size: 15px; padding: 10px; border-radius: 8px;
+    border: 1px solid var(--border); background: var(--surface); color: var(--text); font-weight: 600; text-align: center;
+  }
+  input[type="number"]:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); }
+  
+  .rent-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(75px, 1fr)); gap: 10px; margin-top: 12px; }
+  .rent-item { display: flex; flex-direction: column; gap: 4px; }
+  .rent-item span { font-size: 12px; color: var(--text-dim); font-weight: 600; text-align: center; }
+  .rent-item input { width: 100%; font-size: 13px; padding: 8px 4px; border-radius: 6px; }
+  
+  .field-unit { font-size: 13px; color: var(--text-dim); flex: 0 0 auto; font-weight: 500;}
+  .miniinfo { margin-top: 16px; padding-top: 16px; border-top: 1px dashed var(--border); font-size: 14px; color: var(--text-dim); }
+  .miniinfo .row { display: flex; justify-content: space-between; margin-bottom: 12px; }
+  .miniinfo .row span:last-child { font-weight: 700; color: var(--text); }
+  
+  .btn-sm { padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: bold; border: none; cursor: pointer;}
+  .bg-green { background: var(--green-soft); color: var(--green); }
+  .bg-accent { background: var(--accent-soft); color: var(--accent); }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <div class="header-box">
+    <h1>🏢 Dashboard Tài Chính CCMN</h1>
+    <p class="subtitle">Ứng dụng theo dõi dòng tiền, lợi nhuận Chủ nhà & NĐT.</p>
+  </div>
+
+  <!-- KPI CAROUSEL -->
+  <div class="cards-wrapper">
+    <div class="card scard">
+      <span class="title">Doanh thu thuần / tháng</span>
+      <span class="value" id="c0-value" style="color:var(--green)"></span>
+      <span class="sub">Thực thu (theo lấp đầy) − Phí vận hành</span>
+      <span class="pill" id="c0-pill" style="background:var(--green-soft);color:var(--green)"></span>
+    </div>
+    <div class="card scard">
+      <span class="title">Vốn túi Chủ nhà Ngày 0</span>
+      <span class="value" id="c1-value" style="color:var(--amber)"></span>
+      <span class="sub">Cải tạo + Tiền nhà (Trừ Bank & NĐT)</span>
+      <span class="pill" id="c1-pill" style="background:var(--amber-soft);color:var(--amber)"></span>
+    </div>
+    <div class="card scard">
+      <span class="title">Nợ gốc & lãi Bank / tháng</span>
+      <span class="value" id="c3-value" style="color:var(--red)"></span>
+      <span class="sub">Tháng đầu tiên (Nặng nhất) → Tháng cuối</span>
+      <span class="pill" id="c3-pill" style="background:var(--red-soft);color:var(--red)">Trả góp giảm dần</span>
+    </div>
+    <div class="card scard">
+      <span class="title">Dòng tiền Chủ nhà / tháng</span>
+      <span class="value" id="c4-value"></span>
+      <span class="sub">Tháng thấp nhất → Tháng cao nhất (Biên độ)</span>
+      <span class="pill" id="c4-pill"></span>
+    </div>
+    <div class="card scard">
+      <span class="title">Lợi nhuận ròng Chủ nhà</span>
+      <span class="value" id="c2-value"></span>
+      <span class="sub">Tổng lãi đút túi khi kết thúc (Đã trừ NĐT)</span>
+      <span class="pill" id="c2-pill"></span>
+    </div>
+  </div>
+
+  <!-- CHART TABS -->
+  <div class="tabs-container">
+    <div class="tabs-header">
+      <button class="tab-btn active" onclick="switchTab('tab-owner')">👑 Lợi nhuận Chủ nhà</button>
+      <button class="tab-btn" onclick="switchTab('tab-investor')">🤝 Lợi nhuận Cổ đông</button>
+      <button class="tab-btn" onclick="switchTab('tab-bank')">🏦 Trả nợ Ngân hàng</button>
+    </div>
+
+    <!-- TAB 1: CHỦ NHÀ -->
+    <div id="tab-owner" class="tab-content active">
+      <div class="card-panel">
+        <div class="chart-head">
+          <div class="chart-summary">Tổng lãi cuối kỳ: <span id="ch1-stat" style="font-size:16px;"></span> <span class="roi-pill" id="ch1-roi"></span></div>
+          <div>
+            <span class="be-pill" id="be-pill"></span>
+            <span class="df-pill" id="df-pill"></span>
+          </div>
+        </div>
+        <div class="scroll-hint">👉 Vuốt sang trái để xem các năm cuối</div>
+        <div class="scrollx">
+          <div id="chart" onmousemove="handleChartHover(event)" onmouseleave="hideTooltip()" ontouchstart="handleChartHover(event)" ontouchmove="handleChartHover(event)" ontouchend="hideTooltip()"></div>
+          <div id="tooltip" class="tooltip">
+            <div class="tt-head" id="tt-year"></div>
+            <div style="margin-bottom:4px;">Tích lũy Chủ nhà: <span class="tt-val" id="tt-val"></span></div>
+            <div id="tt-monthly-row" style="font-size: 13px; color: var(--text-dim)">
+              <span id="tt-monthly-label">Lãi/lỗ tháng này:</span> <span class="tt-val" id="tt-monthly-val"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: CỔ ĐÔNG -->
+    <div id="tab-investor" class="tab-content">
+      <div class="card-panel">
+        <div class="chart-head">
+          <div class="chart-summary" id="ch2-stat-container">Tổng lãi cuối kỳ NĐT: <span id="ch2-stat" style="font-size:16px;"></span> <span class="roi-pill" id="ch2-roi"></span></div>
+          <div>
+            <span class="be-pill" id="inv-be-pill" style="background:var(--purple-soft); color:var(--purple)"></span>
+          </div>
+        </div>
+        <div class="scroll-hint">👉 Vuốt sang trái để xem các năm cuối</div>
+        <div class="scrollx">
+          <div id="inv-chart" onmousemove="handleInvChartHover(event)" onmouseleave="hideInvTooltip()" ontouchstart="handleInvChartHover(event)" ontouchmove="handleInvChartHover(event)" ontouchend="hideInvTooltip()"></div>
+          <div id="inv-tooltip" class="tooltip">
+            <div class="tt-head" id="itt-year"></div>
+            <div style="margin-bottom:4px;">Tích lũy NĐT: <span class="tt-val" id="itt-val"></span></div>
+            <div id="itt-monthly-row" style="font-size: 13px; color: var(--text-dim)">
+              <span id="itt-monthly-label">Thực nhận tháng này:</span> <span class="tt-val" id="itt-monthly-val"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: NGÂN HÀNG -->
+    <div id="tab-bank" class="tab-content">
+      <div class="card-panel">
+        <div class="chart-head">
+          <div class="chart-summary" id="ch3-stat-container">Tổng Gốc & Lãi thực trả trọn kỳ: <span id="ch3-stat" style="color: var(--red); font-size:16px;"></span></div>
+          <div>
+            <span class="df-pill" style="background:var(--red-soft); color:var(--red);">🔴 Tiền Lãi (Giảm dần)</span>
+            <span class="df-pill" style="background:var(--accent-soft); color:var(--accent);">🔵 Tiền Gốc (Cố định)</span>
+          </div>
+        </div>
+        <div class="scroll-hint">👉 Vuốt sang trái để xem các năm cuối</div>
+        <div class="scrollx">
+          <div id="loan-chart" onmousemove="handleLoanChartHover(event)" onmouseleave="hideLoanTooltip()" ontouchstart="handleLoanChartHover(event)" ontouchmove="handleLoanChartHover(event)" ontouchend="hideLoanTooltip()"></div>
+          <div id="loan-tooltip" class="tooltip">
+            <div class="tt-head" id="lt-month"></div>
+            <div style="margin-bottom:6px;">Trả tháng này: <span class="tt-val" id="lt-total" style="color:var(--text)"></span></div>
+            <div style="font-size: 13px; color: var(--text-dim); margin-bottom:4px;">- Tiền Gốc: <span class="tt-val" id="lt-principal" style="color:var(--accent)"></span></div>
+            <div style="font-size: 13px; color: var(--text-dim)">- Tiền Lãi: <span class="tt-val" id="lt-interest" style="color:var(--red)"></span></div>
+            <div style="margin-top:8px; padding-top:8px; border-top:1px dashed var(--border); font-size: 13px; color: var(--text-dim);">
+              Lũy kế đã trả: <span class="tt-val" id="lt-cumulative" style="color:var(--text)"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- NÚT GỌI WIDGET TRÊN MOBILE -->
+  <button class="fab-btn" onclick="openSettings()">⚙️ Điều chỉnh thông số</button>
+  <div class="overlay" id="overlay" onclick="closeSettings()"></div>
+
+  <!-- BOTTOM SHEET / WIDGET CÀI ĐẶT -->
+  <div class="settings-wrapper" id="settings-panel">
+    <div class="sheet-header">
+      <h2>⚙️ Cài đặt Thông số</h2>
+      <button class="close-btn" onclick="closeSettings()">✕</button>
+    </div>
+
+    <!-- Nút Load/Save XML -->
+    <div class="actions" style="margin-bottom: 20px; border-bottom: 1px dashed var(--border); padding-bottom: 16px;">
+        <button class="btn bg-green" onclick="saveToXML()">💾 Lưu XML</button>
+        <button class="btn bg-accent" onclick="document.getElementById('xml-upload').click()">📂 Mở XML</button>
+        <input type="file" id="xml-upload" accept=".xml" style="display: none;" onchange="loadFromXML(event)" />
+    </div>
+
+    <div class="groups">
+      <div class="subcard">
+        <h3>💰 Vốn Đầu tư & Kinh doanh</h3>
+        <div id="f-capex"></div>
+        <div id="f-revenueMax"></div>
+        <div id="f-opCost"></div>
+        <div class="field" style="margin-top: 16px; border-top: 1px dashed var(--border); padding-top: 16px;">
+          <div class="field-top"><label>Tỷ lệ Lấp đầy Từng năm (%)</label></div>
+          <div class="rent-grid" id="occ-grid-container"></div>
+        </div>
+        <div class="miniinfo">
+          <div class="row"><span>Doanh thu thuần TB / tháng</span><span id="mi-netRev" style="color: var(--green);"></span></div>
+        </div>
+      </div>
+      
+      <div class="subcard">
+        <h3>🏠 Hợp đồng & Giá thuê nhà</h3>
+        <div id="f-contractYears"></div>
+        <div id="f-upfrontRentMonths"></div>
+        <div class="field" style="margin-top: 16px; border-top: 1px dashed var(--border); padding-top: 16px;">
+          <div class="field-top"><label>Giá thuê trả Chủ nhà (Tr.VNĐ/Th)</label></div>
+          <div class="rent-grid" id="rent-grid-container"></div>
+        </div>
+      </div>
+
+      <div class="subcard">
+        <h3>🏦 Đòn bẩy Ngân hàng</h3>
+        <div id="f-loanAmount"></div>
+        <div id="f-loanAmountActual"></div>
+        <div id="f-ratePct"></div>
+        <div id="f-loanYears"></div>
+        <div class="miniinfo">
+          <div class="row"><span>Tổng tiền trả Ngân hàng</span><span id="mi-totalLoan" style="color: var(--red);"></span></div>
+        </div>
+      </div>
+
+      <div class="subcard" style="border: 2px solid var(--purple-soft);">
+        <h3 style="color: var(--purple);">🤝 Cổ đông & Phân chia</h3>
+        <div id="f-invCapital"></div>
+        <div id="f-invPrefDiv"></div>
+        <div id="f-invPrefMonths"></div>
+        <div id="f-invEquityPct"></div>
+        
+        <div class="miniinfo">
+          <div class="row"><span>Tiền NĐT / tháng (Ưu tiên)</span><span id="mi-invMonthlyPref" style="color: var(--purple);"></span></div>
+          <div class="row"><span>Tiền NĐT / tháng (Cổ phần)</span><span id="mi-invMonthlyNormal" style="color: var(--green);"></span></div>
+          <div class="row"><span>Tạm ứng thực nhận (GĐ 1)</span><span id="mi-invAdvance"></span></div>
+          <div class="row"><span>Dự kiến NĐT nợ lại</span><span id="mi-invDebt" style="color: var(--red);"></span></div>
+          <div class="row"><span>Tháng NĐT hết nợ cấn trừ</span><span id="mi-invCleared"></span></div>
+        </div>
+      </div>
+    </div>
+    <button class="btn-done" onclick="closeSettings()">✅ Áp dụng & Xem Biểu đồ</button>
+  </div>
+  
+  <footer>Chạy trực tiếp Offline trên Browser (Không lưu trữ Server).</footer>
+</div>
+
+<script>
+/* ---------------- State ---------------- */
+const state = {
+  capex: 600000000, 
+  upfrontRentMonths: 12,
+  revenueMax: 42000000,
+  opCost: 2500000,
+  contractYears: 10,
+  loanAmount: 650000000,
+  loanAmountActual: 550000000,
+  ratePct: 10.5,
+  loanYears: 5,
+  rentSchedule: Array(25).fill(17000000),
+  occupancySchedule: Array(25).fill(90), 
+  
+  invCapital: 200000000,
+  invPrefDiv: 0,
+  invPrefMonths: 0,
+  invEquityPct: 30
+};
+
+let currentMonthlyData = [];
+let currentMonthlyInvData = [];
+let currentLoanSchedule = [];
+
+/* ---------------- TABS & BOTTOM SHEET UI LOGIC ---------------- */
+function switchTab(tabId) {
+    document.querySelectorAll('.tab-btn').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    event.currentTarget.classList.add('active');
+    document.getElementById(tabId).classList.add('active');
+}
+
+function openSettings() {
+    document.getElementById('settings-panel').classList.add('open');
+    document.getElementById('overlay').classList.add('open');
+    document.body.style.overflow = 'hidden'; 
+}
+
+function closeSettings() {
+    document.getElementById('settings-panel').classList.remove('open');
+    document.getElementById('overlay').classList.remove('open');
+    document.body.style.overflow = '';
+}
+
+/* ---------------- File Manger (Save/Load XML) ---------------- */
+function saveToXML() {
+    let filename = prompt("Nhập tên file để lưu kịch bản này:", "ccmn_dashboard_scenario");
+    if (!filename) return; 
+    if (!filename.toLowerCase().endsWith(".xml")) filename += ".xml";
+
+    let xml = '<?xml version="1.0" encoding="UTF-8"?>\n<DashboardState>\n';
+    for (let key in state) {
+        if (key === 'rentSchedule' || key === 'occupancySchedule') {
+            xml += `  <${key}>\n`;
+            state[key].forEach((val, idx) => {
+                xml += `    <year index="${idx}">${val}</year>\n`;
+            });
+            xml += `  </${key}>\n`;
+        } else {
+            xml += `  <${key}>${state[key]}</${key}>\n`;
+        }
+    }
+    xml += '</DashboardState>';
+
+    const blob = new Blob([xml], { type: "text/xml" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
+function loadFromXML(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const parser = new DOMParser();
+            const xmlDoc = parser.parseFromString(e.target.result, "text/xml");
+
+            if (xmlDoc.getElementsByTagName("DashboardState").length === 0) {
+                alert("File XML không đúng định dạng!");
+                return;
+            }
+
+            for (let key in state) {
+                if (key === 'rentSchedule' || key === 'occupancySchedule') {
+                    const listNodes = xmlDoc.getElementsByTagName(key);
+                    if (listNodes.length > 0) {
+                        const yearNodes = listNodes[0].getElementsByTagName("year");
+                        for (let i = 0; i < yearNodes.length; i++) {
+                            const idx = parseInt(yearNodes[i].getAttribute("index"));
+                            state[key][idx] = parseFloat(yearNodes[i].textContent);
+                        }
+                    }
+                } else {
+                    const node = xmlDoc.getElementsByTagName(key)[0];
+                    if (node && node.textContent) {
+                        state[key] = parseFloat(node.textContent);
+                    }
+                }
+            }
+
+            Object.keys(fieldDefs).forEach((key) => {
+                const numEl = document.getElementById("num-" + key);
+                const rangeEl = document.getElementById("range-" + key);
+                if (numEl && rangeEl) {
+                    numEl.value = toInputVal(key);
+                    rangeEl.value = state[key];
+                }
+            });
+
+            buildRentGrid();
+            buildOccGrid();
+            render();
+            
+        } catch (err) {
+            alert("Lỗi đọc file XML: " + err.message);
+        }
+    };
+    reader.readAsText(file);
+    event.target.value = ""; 
+}
+
+/* ---------------- Formatters ---------------- */
+function fmtVND(v) {
+  return new Intl.NumberFormat("vi-VN", { maximumFractionDigits: 0 }).format(Math.round(v)) + " ₫";
+}
+function fmtTrieu(v) {
+  const trieu = v / 1000000;
+  return new Intl.NumberFormat("vi-VN", { maximumFractionDigits: 1, minimumFractionDigits: 1 }).format(trieu) + " triệu";
+}
+
+/* ---------------- Build Rent & Occ Grid ---------------- */
+function buildRentGrid() {
+  const container = document.getElementById("rent-grid-container");
+  container.innerHTML = "";
+  for (let i = 0; i < state.contractYears; i++) {
+    const valTrieu = Number((state.rentSchedule[i] / 1000000).toFixed(1));
+    const html = `
+      <div class="rent-item">
+        <span>Năm ${i + 1}</span>
+        <input type="number" class="rent-input" data-year="${i}" step="0.5" value="${valTrieu}" />
+      </div>
+    `;
+    container.insertAdjacentHTML('beforeend', html);
+  }
+}
+
+document.getElementById("rent-grid-container").addEventListener("input", (e) => {
+  if(e.target.classList.contains("rent-input")) {
+    const yearIdx = parseInt(e.target.getAttribute("data-year"));
+    let val = parseFloat(e.target.value);
+    if(isNaN(val)) val = 0;
+    const newVal = val * 1000000;
+    state.rentSchedule[yearIdx] = newVal;
+    for (let i = yearIdx + 1; i < state.contractYears; i++) {
+        state.rentSchedule[i] = newVal;
+        const nextInput = document.querySelector(`.rent-input[data-year="${i}"]`);
+        if (nextInput) nextInput.value = val;
+    }
+    render();
+  }
+});
+
+function buildOccGrid() {
+  const container = document.getElementById("occ-grid-container");
+  container.innerHTML = "";
+  for (let i = 0; i < state.contractYears; i++) {
+    const valOcc = Number((state.occupancySchedule[i]).toFixed(1));
+    const html = `
+      <div class="rent-item">
+        <span>Năm ${i + 1}</span>
+        <input type="number" class="occ-input" data-year="${i}" step="1" value="${valOcc}" />
+      </div>
+    `;
+    container.insertAdjacentHTML('beforeend', html);
+  }
+}
+
+document.getElementById("occ-grid-container").addEventListener("input", (e) => {
+  if(e.target.classList.contains("occ-input")) {
+    const yearIdx = parseInt(e.target.getAttribute("data-year"));
+    let val = parseFloat(e.target.value);
+    if(isNaN(val)) val = 0;
+    if(val > 100) val = 100;
+    if(val < 0) val = 0;
+    state.occupancySchedule[yearIdx] = val;
+    for (let i = yearIdx + 1; i < state.contractYears; i++) {
+        state.occupancySchedule[i] = val;
+        const nextInput = document.querySelector(`.occ-input[data-year="${i}"]`);
+        if (nextInput) nextInput.value = val;
+    }
+    render();
+  }
+});
+
+/* ---------------- Thuật toán Tài chính ---------------- */
+function calcFinance(s) {
+  let upfrontRentTotal = 0;
+  for (let m = 1; m <= s.upfrontRentMonths; m++) {
+    let yearIdx = Math.floor((m - 1) / 12);
+    if (yearIdx >= s.contractYears) yearIdx = s.contractYears - 1; 
+    upfrontRentTotal += s.rentSchedule[yearIdx];
+  }
+
+  let actualLoanUsed = Math.min(s.loanAmountActual, s.loanAmount);
+  const initialOwnerCashOut = s.capex + upfrontRentTotal - actualLoanUsed - s.invCapital;
+
+  const totalLoanMonths = Math.round(s.loanYears * 12);
+  const monthlyPrincipal = totalLoanMonths > 0 ? s.loanAmount / totalLoanMonths : 0;
+  const monthlyInterestRate = s.ratePct / 100 / 12;
+
+  let ownerCum = -initialOwnerCashOut;
+  let invCum = -s.invCapital;
+  
+  const monthlyOwner = [{ month: 0, value: ownerCum, monthlyCF: 0 }];
+  const monthlyInvestor = [{ month: 0, value: invCum, monthlyCF: 0 }];
+  const totalMonths = s.contractYears * 12;
+
+  let invActualReceived = 0;
+  let projectProfits_Pref = 0;
+  let invDebt = 0;
+  let invClearedMonth = 0;
+  let invMonthlyPref = s.invCapital > 0 ? s.invPrefDiv : 0;
+  
+  let firstMonthDebt = 0;
+  let lastMonthDebt = 0;
+  let remainingPrincipal = s.loanAmount;
+  let totalLoanPaid = 0; 
+  let loanSchedule = [];
+
+  let minOwnerCF = Infinity;
+  let maxOwnerCF = -Infinity;
+  let totalNetRevenue = 0;
+
+  for (let m = 1; m <= totalMonths; m++) {
+    let currentYearIdx = Math.floor((m - 1) / 12);
+    
+    let currentOcc = s.occupancySchedule[currentYearIdx];
+    let monthlyRevenue = s.revenueMax * (currentOcc / 100);
+    let netRevenueMonthly = monthlyRevenue - s.opCost;
+    totalNetRevenue += netRevenueMonthly;
+    
+    let futureMonth = m + s.upfrontRentMonths;
+    let rentCashOutflow = 0;
+    if (futureMonth <= totalMonths) {
+        let futureYearIdx = Math.floor((futureMonth - 1) / 12);
+        rentCashOutflow = s.rentSchedule[futureYearIdx];
+    }
+    
+    let debtCashOutflow = 0;
+    if (m <= totalLoanMonths && remainingPrincipal > 0) {
+        let interestPayment = remainingPrincipal * monthlyInterestRate;
+        debtCashOutflow = monthlyPrincipal + interestPayment;
+        totalLoanPaid += debtCashOutflow; 
+        
+        loanSchedule.push({
+            month: m,
+            total: debtCashOutflow,
+            principal: monthlyPrincipal,
+            interest: interestPayment,
+            cumulativeTotal: totalLoanPaid
+        });
+
+        if (m === 1) firstMonthDebt = debtCashOutflow;
+        if (m === totalLoanMonths) lastMonthDebt = debtCashOutflow;
+
+        remainingPrincipal -= monthlyPrincipal;
+        if (remainingPrincipal < 0) remainingPrincipal = 0;
+    }
+    
+    let projectCF = monthlyRevenue - rentCashOutflow - s.opCost - debtCashOutflow;
+    let ownerCF = 0;
+    let invCF = 0;
+
+    if (m <= s.invPrefMonths) {
+        invCF = s.invPrefDiv;
+        ownerCF = projectCF - invCF;
+        invActualReceived += invCF;
+        projectProfits_Pref += projectCF; 
+    } else {
+        if (m === s.invPrefMonths + 1) {
+            let targetInv = projectProfits_Pref * (s.invEquityPct / 100);
+            invDebt = Math.max(0, invActualReceived - targetInv);
+        }
+        let baseInvShare = projectCF > 0 ? projectCF * (s.invEquityPct / 100) : 0;
+
+        if (invDebt > 0 && baseInvShare > 0) {
+            let deduction = Math.min(invDebt, baseInvShare);
+            invDebt -= deduction;
+            invCF = baseInvShare - deduction; 
+            if (invDebt <= 0 && invClearedMonth === 0) invClearedMonth = m; 
+        } else {
+            invCF = baseInvShare; 
+        }
+        ownerCF = projectCF - invCF;
+    }
+
+    if (m < totalMonths || totalMonths === 1) {
+        if (ownerCF < minOwnerCF) minOwnerCF = ownerCF;
+        if (ownerCF > maxOwnerCF) maxOwnerCF = ownerCF;
+    }
+
+    ownerCum += ownerCF;
+    invCum += invCF;
+
+    monthlyOwner.push({ month: m, value: ownerCum, monthlyCF: ownerCF });
+    monthlyInvestor.push({ month: m, value: invCum, monthlyCF: invCF });
+  }
+
+  if (minOwnerCF === Infinity) minOwnerCF = 0;
+  if (maxOwnerCF === -Infinity) maxOwnerCF = 0;
+
+  let avgNetRevenue = totalMonths > 0 ? totalNetRevenue / totalMonths : 0;
+
+  let sampleNormalMonth = s.invPrefMonths + 1;
+  let sampleYearIdx = Math.floor((sampleNormalMonth - 1) / 12);
+  if (sampleYearIdx >= s.contractYears) sampleYearIdx = s.contractYears - 1;
+  
+  let sFutureMonthNormal = sampleNormalMonth + s.upfrontRentMonths;
+  let sampleRentNormal = sFutureMonthNormal <= totalMonths ? s.rentSchedule[Math.floor((sFutureMonthNormal - 1) / 12)] : 0;
+  let sampleRev = s.revenueMax * (s.occupancySchedule[sampleYearIdx] / 100);
+  let sampleProjectCF = sampleRev - sampleRentNormal - s.opCost - 0; 
+  let invNormalMonthly = sampleProjectCF > 0 ? sampleProjectCF * (s.invEquityPct / 100) : 0;
+
+  let breakEvenMonth = null;
+  for (let i = 1; i < monthlyOwner.length; i++) {
+    const a = monthlyOwner[i - 1], b = monthlyOwner[i];
+    if (a.value < 0 && b.value >= 0) {
+      breakEvenMonth = a.month + (-a.value / (b.value - a.value));
+      break;
+    }
+  }
+  if (monthlyOwner[0].value >= 0) breakEvenMonth = 0;
+
+  let invBreakEvenMonth = null;
+  if (s.invCapital > 0) {
+      for (let i = 1; i < monthlyInvestor.length; i++) {
+        const a = monthlyInvestor[i - 1], b = monthlyInvestor[i];
+        if (a.value < 0 && b.value >= 0 && (b.value - a.value) > 0) {
+          invBreakEvenMonth = a.month + (-a.value / (b.value - a.value));
+          break;
+        }
+      }
+      if (monthlyInvestor[0].value >= 0) invBreakEvenMonth = 0;
+  }
+
+  let debtClearedMonth = (s.loanAmount > 0 && totalLoanMonths > 0) ? Math.min(totalLoanMonths, totalMonths) : null;
+  let tempTargetInv = projectProfits_Pref * (s.invEquityPct / 100);
+  let expectedDebt = Math.max(0, invActualReceived - tempTargetInv);
+
+  let ownerFinalProfit = monthlyOwner[monthlyOwner.length - 1].value;
+  let ownerROI = 0;
+  let isInfiniteOwnerROI = false;
+  if (initialOwnerCashOut > 0) {
+      ownerROI = (ownerFinalProfit / initialOwnerCashOut) * 100;
+  } else if (ownerFinalProfit > 0) {
+      isInfiniteOwnerROI = true;
+  }
+
+  let invFinalProfit = monthlyInvestor[monthlyInvestor.length - 1].value;
+  let invROI = 0;
+  if (s.invCapital > 0) invROI = (invFinalProfit / s.invCapital) * 100;
+
+  return {
+    avgNetRevenue, initialOwnerCashOut, firstMonthDebt, lastMonthDebt, totalLoanPaid, 
+    minOwnerCF, maxOwnerCF, invMonthlyPref, invNormalMonthly,
+    monthlyOwner, monthlyInvestor, loanSchedule, 
+    breakEven: breakEvenMonth !== null ? { month: breakEvenMonth, value: 0 } : null, 
+    invBreakEven: invBreakEvenMonth !== null ? { month: invBreakEvenMonth, value: 0 } : null,
+    debtClearedMonth, finalProfit: ownerFinalProfit,
+    ownerROI, isInfiniteOwnerROI, invROI, invActualReceived, expectedDebt, invClearedMonth
+  };
+}
+
+/* ---------------- Field definitions ---------------- */
+const fieldDefs = {
+  capex: { label: "Vốn Cải tạo cốt lõi (Capex)", min: 100000000, max: 6000000000, sliderStep: 10000000,
+    money: true, inputStep: 1, inputMin: 100, inputMax: 6000 },
+  upfrontRentMonths: { label: "Số tháng đóng tiền nhà", min: 0, max: 24, sliderStep: 1,
+    money: false, unitSuffix: " tháng", inputStep: 1, inputMin: 0, inputMax: 24 },
+  contractYears: { label: "Chu kỳ hợp đồng (Năm)", min: 1, max: 15, sliderStep: 1,
+    money: false, unitSuffix: " năm", inputStep: 1, inputMin: 1, inputMax: 15 },
+  revenueMax: { label: "Doanh thu 100% / tháng", min: 0, max: 100000000, sliderStep: 500000,
+    money: true, inputStep: 0.5, inputMin: 0, inputMax: 100 },
+  opCost: { label: "Phí vận hành / tháng", min: 0, max: 20000000, sliderStep: 100000,
+    money: true, inputStep: 0.1, inputMin: 0, inputMax: 20 },
+    
+  loanAmount: { label: "Vay Ngân hàng (Tổng nợ)", min: 0, max: 6000000000, sliderStep: 10000000,
+    money: true, inputStep: 1, inputMin: 0, inputMax: 6000 },
+  loanAmountActual: { label: "↳ Thực chi vào Dự án", min: 0, max: 6000000000, sliderStep: 10000000,
+    money: true, inputStep: 1, inputMin: 0, inputMax: 6000 },
+  ratePct: { label: "Lãi suất vay / năm", min: 5, max: 15, sliderStep: 0.1,
+    money: false, unitSuffix: "%", inputStep: 0.1, inputMin: 5, inputMax: 15 },
+  loanYears: { label: "Thời hạn vay", min: 1, max: 10, sliderStep: 1,
+    money: false, unitSuffix: " năm", inputStep: 1, inputMin: 1, inputMax: 10 },
+
+  invCapital: { label: "Vốn góp của NĐT", min: 0, max: 6000000000, sliderStep: 10000000,
+    money: true, inputStep: 1, inputMin: 0, inputMax: 6000 },
+  invPrefDiv: { label: "Tạm ứng ưu tiên / tháng", min: 0, max: 50000000, sliderStep: 500000,
+    money: true, inputStep: 0.5, inputMin: 0, inputMax: 50 },
+  invPrefMonths: { label: "Số tháng ưu tiên", min: 0, max: 60, sliderStep: 1,
+    money: false, unitSuffix: " tháng", inputStep: 1, inputMin: 0, inputMax: 60 },
+  invEquityPct: { label: "Cổ phần Giai đoạn 2", min: 0, max: 100, sliderStep: 1,
+    money: false, unitSuffix: "%", inputStep: 1, inputMin: 0, inputMax: 100 }
+};
+
+function badgeText(key) {
+  const d = fieldDefs[key];
+  return d.money ? fmtTrieu(state[key]) : (d.sliderStep < 1 ? state[key].toFixed(1) : state[key]) + d.unitSuffix;
+}
+function toInputVal(key) {
+  const d = fieldDefs[key];
+  const raw = d.money ? state[key] / 1000000 : state[key];
+  return Number(raw.toFixed(d.inputStep < 1 ? 1 : 0));
+}
+function fromInputVal(key, inputRaw) {
+  const d = fieldDefs[key];
+  let v = Number(inputRaw);
+  if (isNaN(v)) v = d.inputMin;
+  v = Math.min(d.inputMax, Math.max(d.inputMin, v));
+  return d.money ? v * 1000000 : v;
+}
+
+function buildField(key) {
+  const d = fieldDefs[key];
+  const container = document.getElementById("f-" + key);
+  const unitLabel = d.money ? "triệu" : (d.unitSuffix || "").trim();
+  container.innerHTML = `
+    <div class="field">
+      <div class="field-top">
+        <label>${d.label}</label>
+        <span class="badge" id="badge-${key}"></span>
+      </div>
+      <div class="field-row">
+        <input type="range" id="range-${key}" min="${d.min}" max="${d.max}" step="${d.sliderStep}" value="${state[key]}" />
+      </div>
+      <div class="field-row" style="margin-top:10px;">
+        <input type="number" id="num-${key}" min="${d.inputMin}" max="${d.inputMax}" step="${d.inputStep}" />
+        <span class="field-unit">${unitLabel}</span>
+      </div>
+    </div>`;
+
+  const rangeEl = document.getElementById("range-" + key);
+  const numEl = document.getElementById("num-" + key);
+  numEl.value = toInputVal(key);
+
+  const sync = (val) => {
+    state[key] = val;
+    if (key === 'loanAmount' && state.loanAmountActual > state.loanAmount) {
+        state.loanAmountActual = state.loanAmount;
+        if (document.getElementById("range-loanAmountActual")) {
+            document.getElementById("range-loanAmountActual").value = state.loanAmountActual;
+            document.getElementById("num-loanAmountActual").value = toInputVal('loanAmountActual');
+        }
+    }
+    if (key === 'loanAmountActual' && state.loanAmountActual > state.loanAmount) {
+        state.loanAmountActual = state.loanAmount;
+    }
+    if(key === 'contractYears') { buildRentGrid(); buildOccGrid(); }
+    render();
+  }
+
+  rangeEl.addEventListener("input", (e) => {
+    sync(Number(e.target.value));
+    numEl.value = toInputVal(key);
+    if (key === 'loanAmountActual') e.target.value = state.loanAmountActual;
+  });
+
+  numEl.addEventListener("input", (e) => {
+    sync(fromInputVal(key, e.target.value));
+    rangeEl.value = state[key];
+    if (key === 'loanAmountActual') e.target.value = toInputVal('loanAmountActual');
+  });
+  numEl.addEventListener("blur", () => { numEl.value = toInputVal(key); });
+}
+
+Object.keys(fieldDefs).forEach(buildField);
+buildRentGrid();
+buildOccGrid(); 
+
+/* ---------------- SVG Builders ---------------- */
+function buildChartSVG(monthlyData, breakEven, contractYears, debtClearedMonth) {
+  const totalMonths = contractYears * 12;
+  const width = Math.max(800, contractYears * 75);
+  const height = 320;
+  const margin = { top: 30, right: 30, bottom: 40, left: 80 };
+  const chartW = width - margin.left - margin.right;
+  const chartH = height - margin.top - margin.bottom;
+
+  const values = monthlyData.map(d => d.value);
+  let minV = Math.min(0, ...values);
+  let maxV = Math.max(0, ...values);
+  const pad = (maxV - minV) * 0.1 || 1000000;
+  minV -= pad; maxV += pad;
+
+  window._chartLayout = { margin, chartW, chartH, minV, maxV, totalMonths };
+
+  const xScale = (month) => margin.left + (month / totalMonths) * chartW;
+  const yScale = (val) => margin.top + chartH - ((val - minV) / (maxV - minV)) * chartH;
+
+  const linePath = monthlyData.map((d, i) => `${i === 0 ? "M" : "L"} ${xScale(d.month).toFixed(2)} ${yScale(d.value).toFixed(2)}`).join(" ");
+  const zeroY = yScale(0);
+  const areaPath = `M ${xScale(0).toFixed(2)} ${zeroY.toFixed(2)} ` +
+    monthlyData.map(d => `L ${xScale(d.month).toFixed(2)} ${yScale(d.value).toFixed(2)}`).join(" ") +
+    ` L ${xScale(totalMonths).toFixed(2)} ${zeroY.toFixed(2)} Z`;
+
+  const yTicks = 4;
+  let gridSvg = "";
+  for(let i=0; i<=yTicks; i++) {
+    let v = minV + ((maxV - minV) * i) / yTicks;
+    gridSvg += `<line x1="${margin.left}" x2="${width - margin.right}" y1="${yScale(v)}" y2="${yScale(v)}" stroke="var(--grid)" stroke-width="1" />`;
+    gridSvg += `<text x="${margin.left - 8}" y="${yScale(v) + 4}" text-anchor="end" font-size="12" fill="var(--text-dim)">${fmtTrieu(v)}</text>`;
+  }
+
+  let xLabelsSvg = "", dotsSvg = "";
+  for (let yr = 0; yr <= contractYears; yr++) {
+      let m = yr * 12;
+      let val = monthlyData.find(d => d.month === m)?.value || 0;
+      xLabelsSvg += `<text x="${xScale(m)}" y="${height - margin.bottom + 20}" text-anchor="middle" font-size="12" fill="var(--text-dim)">Năm ${yr}</text>`;
+      dotsSvg += `<circle cx="${xScale(m)}" cy="${yScale(val)}" r="4" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" pointer-events="none" />`;
+  }
+
+  let beSvg = "";
+  if (breakEven && breakEven.month > 0 && breakEven.month < totalMonths) {
+    const beYears = Math.floor(breakEven.month / 12), beMonths = Math.round(breakEven.month % 12);
+    beSvg = `
+      <line x1="${xScale(breakEven.month)}" x2="${xScale(breakEven.month)}" y1="${margin.top}" y2="${height - margin.bottom}" stroke="var(--amber)" stroke-width="1.5" stroke-dasharray="4 4" />
+      <circle cx="${xScale(breakEven.month)}" cy="${zeroY}" r="5" fill="var(--amber)" stroke="var(--surface)" stroke-width="2" pointer-events="none" />
+      <text x="${xScale(breakEven.month)}" y="${margin.top - 10}" text-anchor="middle" font-size="12" font-weight="700" fill="var(--amber)" pointer-events="none">Hòa vốn: ${beYears}n ${beMonths}t</text>`;
+  }
+
+  let debtSvg = "";
+  if (debtClearedMonth && debtClearedMonth > 0 && debtClearedMonth <= totalMonths) {
+    const val = monthlyData.find(d => d.month === debtClearedMonth)?.value || 0;
+    let textY = margin.top - 10;
+    if (breakEven && Math.abs(xScale(breakEven.month) - xScale(debtClearedMonth)) < 80) textY = margin.top + 16; 
+    debtSvg = `
+      <line x1="${xScale(debtClearedMonth)}" x2="${xScale(debtClearedMonth)}" y1="${margin.top}" y2="${height - margin.bottom}" stroke="var(--accent)" stroke-width="1.5" stroke-dasharray="4 4" opacity="0.5" />
+      <circle cx="${xScale(debtClearedMonth)}" cy="${yScale(val)}" r="5" fill="var(--accent)" stroke="var(--surface)" stroke-width="2" pointer-events="none" />
+      <text x="${xScale(debtClearedMonth)}" y="${textY}" text-anchor="middle" font-size="12" font-weight="700" fill="var(--accent)" pointer-events="none">Hết nợ</text>`;
+  }
+
+  return `
+  <svg viewBox="0 0 ${width} ${height}" style="width:100%;min-width:600px;display:block;">
+    <defs>
+      <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="var(--green)" stop-opacity="0.25" />
+        <stop offset="50%" stop-color="var(--green)" stop-opacity="0.05" />
+        <stop offset="50%" stop-color="var(--red)" stop-opacity="0.05" />
+        <stop offset="100%" stop-color="var(--red)" stop-opacity="0.2" />
+      </linearGradient>
+    </defs>
+    ${gridSvg} ${xLabelsSvg}
+    <path d="${areaPath}" fill="url(#areaGrad)" stroke="none" pointer-events="none" />
+    <line x1="${margin.left}" x2="${width - margin.right}" y1="${zeroY}" y2="${zeroY}" stroke="var(--zero-line)" stroke-width="2" stroke-dasharray="4 4" pointer-events="none" />
+    <line id="guideline-x" x1="0" x2="0" y1="${margin.top}" y2="${height - margin.bottom}" stroke="var(--accent)" stroke-width="1.5" stroke-dasharray="3 3" style="display:none;" pointer-events="none" />
+    <line id="guideline-y" x1="${margin.left}" x2="${width - margin.right}" y1="0" y2="0" stroke="var(--accent)" stroke-width="1.5" stroke-dasharray="3 3" style="display:none;" pointer-events="none" />
+    <circle id="hover-dot" cx="0" cy="0" r="5" fill="var(--surface)" stroke="var(--accent)" stroke-width="2.5" style="display:none;" pointer-events="none" />
+    <path d="${linePath}" fill="none" stroke="var(--accent)" stroke-width="3" stroke-linejoin="round" pointer-events="none" />
+    ${dotsSvg} ${beSvg} ${debtSvg}
+  </svg>`;
+}
+
+function buildInvChartSVG(monthlyData, breakEven, contractYears, invCapital) {
+  if (invCapital === 0) return `<div style="padding:40px;text-align:center;color:var(--text-dim);font-weight:500;">Không có NĐT góp vốn.</div>`;
+  const totalMonths = contractYears * 12;
+  const width = Math.max(800, contractYears * 75), height = 320, margin = { top: 30, right: 30, bottom: 40, left: 80 };
+  const chartW = width - margin.left - margin.right, chartH = height - margin.top - margin.bottom;
+  const values = monthlyData.map(d => d.value);
+  let minV = Math.min(0, ...values), maxV = Math.max(0, ...values);
+  const pad = (maxV - minV) * 0.1 || 1000000; minV -= pad; maxV += pad;
+  window._invChartLayout = { margin, chartW, chartH, minV, maxV, totalMonths };
+  const xScale = (month) => margin.left + (month / totalMonths) * chartW;
+  const yScale = (val) => margin.top + chartH - ((val - minV) / (maxV - minV)) * chartH;
+  const linePath = monthlyData.map((d, i) => `${i === 0 ? "M" : "L"} ${xScale(d.month).toFixed(2)} ${yScale(d.value).toFixed(2)}`).join(" ");
+  const zeroY = yScale(0);
+  const areaPath = `M ${xScale(0).toFixed(2)} ${zeroY.toFixed(2)} ` + monthlyData.map(d => `L ${xScale(d.month).toFixed(2)} ${yScale(d.value).toFixed(2)}`).join(" ") + ` L ${xScale(totalMonths).toFixed(2)} ${zeroY.toFixed(2)} Z`;
+  const yTicks = 4; let gridSvg = "";
+  for(let i=0; i<=yTicks; i++) {
+    let v = minV + ((maxV - minV) * i) / yTicks;
+    gridSvg += `<line x1="${margin.left}" x2="${width - margin.right}" y1="${yScale(v)}" y2="${yScale(v)}" stroke="var(--grid)" stroke-width="1" />`;
+    gridSvg += `<text x="${margin.left - 8}" y="${yScale(v) + 4}" text-anchor="end" font-size="12" fill="var(--text-dim)">${fmtTrieu(v)}</text>`;
+  }
+  let xLabelsSvg = "", dotsSvg = "";
+  for (let yr = 0; yr <= contractYears; yr++) {
+      let m = yr * 12, val = monthlyData.find(d => d.month === m)?.value || 0;
+      xLabelsSvg += `<text x="${xScale(m)}" y="${height - margin.bottom + 20}" text-anchor="middle" font-size="12" fill="var(--text-dim)">Năm ${yr}</text>`;
+      dotsSvg += `<circle cx="${xScale(m)}" cy="${yScale(val)}" r="4" fill="var(--surface)" stroke="var(--purple)" stroke-width="2" pointer-events="none" />`;
+  }
+  let beSvg = "";
+  if (breakEven && breakEven.month > 0 && breakEven.month < totalMonths) {
+    const beYears = Math.floor(breakEven.month / 12), beMonths = Math.round(breakEven.month % 12);
+    beSvg = `
+      <line x1="${xScale(breakEven.month)}" x2="${xScale(breakEven.month)}" y1="${margin.top}" y2="${height - margin.bottom}" stroke="var(--purple)" stroke-width="1.5" stroke-dasharray="4 4" />
+      <circle cx="${xScale(breakEven.month)}" cy="${zeroY}" r="5" fill="var(--purple)" stroke="var(--surface)" stroke-width="2" pointer-events="none" />
+      <text x="${xScale(breakEven.month)}" y="${margin.top - 10}" text-anchor="middle" font-size="12" font-weight="700" fill="var(--purple)" pointer-events="none">Hòa vốn NĐT: ${beYears}n ${beMonths}t</text>`;
+  }
+  return `
+  <svg viewBox="0 0 ${width} ${height}" style="width:100%;min-width:600px;display:block;">
+    <defs>
+      <linearGradient id="areaGradInv" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="var(--green)" stop-opacity="0.25" />
+        <stop offset="50%" stop-color="var(--green)" stop-opacity="0.05" />
+        <stop offset="50%" stop-color="var(--red)" stop-opacity="0.05" />
+        <stop offset="100%" stop-color="var(--red)" stop-opacity="0.2" />
+      </linearGradient>
+    </defs>
+    ${gridSvg} ${xLabelsSvg}
+    <path d="${areaPath}" fill="url(#areaGradInv)" stroke="none" pointer-events="none" />
+    <line x1="${margin.left}" x2="${width - margin.right}" y1="${zeroY}" y2="${zeroY}" stroke="var(--zero-line)" stroke-width="2" stroke-dasharray="4 4" pointer-events="none" />
+    <line id="inv-guideline-x" x1="0" x2="0" y1="${margin.top}" y2="${height - margin.bottom}" stroke="var(--purple)" stroke-width="1.5" stroke-dasharray="3 3" style="display:none;" pointer-events="none" />
+    <line id="inv-guideline-y" x1="${margin.left}" x2="${width - margin.right}" y1="0" y2="0" stroke="var(--purple)" stroke-width="1.5" stroke-dasharray="3 3" style="display:none;" pointer-events="none" />
+    <circle id="inv-hover-dot" cx="0" cy="0" r="5" fill="var(--surface)" stroke="var(--purple)" stroke-width="2.5" style="display:none;" pointer-events="none" />
+    <path d="${linePath}" fill="none" stroke="var(--purple)" stroke-width="3" stroke-linejoin="round" pointer-events="none" />
+    ${dotsSvg} ${beSvg}
+  </svg>`;
+}
+
+function buildLoanChartSVG(schedule) {
+  if (!schedule || schedule.length === 0) return `<div style="padding:40px;text-align:center;color:var(--text-dim);font-weight:500;">Không có dư nợ vay ngân hàng.</div>`;
+  const totalMonths = schedule.length;
+  const width = Math.max(800, Math.ceil(totalMonths / 12) * 75), height = 320, margin = { top: 30, right: 30, bottom: 40, left: 80 };
+  const chartW = width - margin.left - margin.right, chartH = height - margin.top - margin.bottom;
+  const maxV = schedule[0].interest + schedule[0].principal;
+  window._loanChartLayout = { margin, chartW, chartH, minV: 0, maxV, totalMonths };
+  const xScale = (month) => margin.left + ((month - 1) / Math.max(1, totalMonths - 1)) * chartW;
+  const yScale = (val) => margin.top + chartH - (val / maxV) * chartH;
+  const interestPath = schedule.map((d, i) => `${i === 0 ? "M" : "L"} ${xScale(d.month).toFixed(2)} ${yScale(d.interest).toFixed(2)}`).join(" ");
+  const principalPath = schedule.map((d, i) => `${i === 0 ? "M" : "L"} ${xScale(d.month).toFixed(2)} ${yScale(d.principal).toFixed(2)}`).join(" ");
+  let gridSvg = "";
+  for(let i=0; i<=3; i++) {
+      let v = (maxV * i) / 3;
+      gridSvg += `<line x1="${margin.left}" x2="${width - margin.right}" y1="${yScale(v)}" y2="${yScale(v)}" stroke="var(--grid)" stroke-width="1" />`;
+      gridSvg += `<text x="${margin.left - 8}" y="${yScale(v) + 4}" text-anchor="end" font-size="12" fill="var(--text-dim)">${fmtTrieu(v)}</text>`;
+  }
+  let xLabelsSvg = "";
+  for (let m = 12; m <= totalMonths; m += 12) {
+      xLabelsSvg += `<line x1="${xScale(m)}" x2="${xScale(m)}" y1="${margin.top}" y2="${height - margin.bottom}" stroke="var(--grid)" stroke-width="1" stroke-dasharray="3 3"/>`;
+      xLabelsSvg += `<text x="${xScale(m)}" y="${height - margin.bottom + 20}" text-anchor="middle" font-size="12" fill="var(--text-dim)">Năm ${m/12}</text>`;
+  }
+  if (totalMonths >= 12) xLabelsSvg += `<text x="${xScale(1)}" y="${height - margin.bottom + 20}" text-anchor="middle" font-size="12" fill="var(--text-dim)">Tháng 1</text>`;
+  return `
+  <svg viewBox="0 0 ${width} ${height}" style="width:100%;min-width:600px;display:block;">
+    ${gridSvg} ${xLabelsSvg}
+    <path d="${interestPath}" fill="none" stroke="var(--red)" stroke-width="3" stroke-linejoin="round" pointer-events="none" />
+    <path d="${principalPath}" fill="none" stroke="var(--accent)" stroke-width="3" stroke-linejoin="round" pointer-events="none" />
+    <line id="loan-guideline-x" x1="0" x2="0" y1="${margin.top}" y2="${height - margin.bottom}" stroke="var(--text)" stroke-width="1" stroke-dasharray="4 4" style="display:none;" pointer-events="none" />
+    <circle id="loan-hover-dot-int" cx="0" cy="0" r="5" fill="var(--surface)" stroke="var(--red)" stroke-width="2.5" style="display:none;" pointer-events="none" />
+    <circle id="loan-hover-dot-prin" cx="0" cy="0" r="5" fill="var(--surface)" stroke="var(--accent)" stroke-width="2.5" style="display:none;" pointer-events="none" />
+  </svg>`;
+}
+
+/* ---------------- Render DOM ---------------- */
+function toneOf(v) { return v >= 0 ? { fg: "var(--green)", bg: "var(--green-soft)" } : { fg: "var(--red)", bg: "var(--red-soft)" }; }
+
+function render() {
+  Object.keys(fieldDefs).forEach((key) => {
+    if(key !== 'occupancy') {
+        const badgeEl = document.getElementById("badge-" + key);
+        if(badgeEl) badgeEl.textContent = badgeText(key);
+    }
+  });
+
+  const result = calcFinance(state);
+  currentMonthlyData = result.monthlyOwner;
+  currentMonthlyInvData = result.monthlyInvestor;
+  currentLoanSchedule = result.loanSchedule;
+
+  document.getElementById("mi-netRev").textContent = fmtTrieu(result.avgNetRevenue) + "/tháng";
+  document.getElementById("mi-totalLoan").textContent = fmtTrieu(result.totalLoanPaid);
+  document.getElementById("mi-invMonthlyPref").textContent = fmtTrieu(result.invMonthlyPref) + "/tháng";
+  document.getElementById("mi-invMonthlyNormal").textContent = fmtTrieu(result.invNormalMonthly) + "/tháng (tối đa)";
+  document.getElementById("mi-invAdvance").textContent = fmtTrieu(result.invActualReceived);
+  document.getElementById("mi-invDebt").textContent = result.expectedDebt > 0 ? fmtTrieu(result.expectedDebt) : "0 (Không nợ)";
+  document.getElementById("mi-invCleared").textContent = result.invClearedMonth > 0 ? `Tháng thứ ${result.invClearedMonth}` : "Không phát sinh";
+
+  // Thẻ 0
+  const t0 = toneOf(result.avgNetRevenue);
+  document.getElementById("c0-value").textContent = fmtTrieu(result.avgNetRevenue);
+  document.getElementById("c0-value").style.color = t0.fg;
+  document.getElementById("c0-pill").textContent = fmtVND(result.avgNetRevenue);
+  document.getElementById("c0-pill").style.background = t0.bg;
+  document.getElementById("c0-pill").style.color = t0.fg;
+
+  // Thẻ 1
+  document.getElementById("c1-value").textContent = fmtTrieu(result.initialOwnerCashOut);
+  document.getElementById("c1-pill").textContent = fmtVND(result.initialOwnerCashOut);
+
+  // Thẻ 2
+  const t2 = toneOf(result.finalProfit);
+  document.getElementById("c2-value").textContent = fmtTrieu(result.finalProfit);
+  document.getElementById("c2-value").style.color = t2.fg;
+  document.getElementById("c2-pill").textContent = fmtVND(result.finalProfit);
+  document.getElementById("c2-pill").style.background = t2.bg;
+  document.getElementById("c2-pill").style.color = t2.fg;
+
+  // Thẻ 3
+  const debtStr = state.loanAmount > 0 ? `${fmtTrieu(result.firstMonthDebt)} → ${fmtTrieu(result.lastMonthDebt)}` : "Không vay";
+  document.getElementById("c3-value").textContent = debtStr;
+  document.getElementById("c3-value").style.fontSize = state.loanAmount > 0 ? "20px" : "24px";
+
+  // Thẻ 4
+  if (Math.abs(result.maxOwnerCF - result.minOwnerCF) < 100000 || state.loanAmount === 0) {
+      const c4 = toneOf(result.minOwnerCF);
+      document.getElementById("c4-value").textContent = fmtTrieu(result.minOwnerCF) + " / th";
+      document.getElementById("c4-value").style.fontSize = "24px";
+      document.getElementById("c4-value").style.color = c4.fg;
+      document.getElementById("c4-pill").textContent = "Cố định / Ổn định";
+      document.getElementById("c4-pill").style.background = c4.bg;
+      document.getElementById("c4-pill").style.color = c4.fg;
+  } else {
+      const c4 = toneOf(result.minOwnerCF);
+      document.getElementById("c4-value").textContent = fmtTrieu(result.minOwnerCF) + " → " + fmtTrieu(result.maxOwnerCF);
+      document.getElementById("c4-value").style.fontSize = "20px";
+      document.getElementById("c4-value").style.color = c4.fg;
+      document.getElementById("c4-pill").textContent = "Tăng dần (giảm lãi vay)";
+      document.getElementById("c4-pill").style.background = c4.bg;
+      document.getElementById("c4-pill").style.color = c4.fg;
+  }
+
+  // Chart 1 (Chủ nhà)
+  const ownerFinal = result.finalProfit;
+  document.getElementById("ch1-stat").textContent = fmtTrieu(ownerFinal);
+  document.getElementById("ch1-stat").style.color = toneOf(ownerFinal).fg;
+  
+  if (result.initialOwnerCashOut > 0) {
+      let roi = result.ownerROI, roiPerYear = roi / state.contractYears;
+      document.getElementById("ch1-roi").textContent = `ROI: ${roi.toFixed(1)}% (${roiPerYear.toFixed(1)}%/năm)`;
+      document.getElementById("ch1-roi").className = "roi-pill";
+      document.getElementById("ch1-roi").style.display = "inline-block";
+  } else if (result.isInfiniteOwnerROI) {
+      document.getElementById("ch1-roi").textContent = `ROI: ∞ (Tay không bắt giặc)`;
+      document.getElementById("ch1-roi").className = "roi-pill roi-infinite";
+      document.getElementById("ch1-roi").style.display = "inline-block";
+  } else {
+      document.getElementById("ch1-roi").style.display = "none";
+  }
+
+  // Chart 3 (Cổ đông)
+  if (state.invCapital === 0) {
+      document.getElementById("ch2-stat-container").style.display = "none";
+  } else {
+      document.getElementById("ch2-stat-container").style.display = "block";
+      const invFinal = result.monthlyInvestor[result.monthlyInvestor.length - 1].value;
+      document.getElementById("ch2-stat").textContent = fmtTrieu(invFinal);
+      document.getElementById("ch2-stat").style.color = toneOf(invFinal).fg;
+      let invRoi = result.invROI, invRoiPerYear = invRoi / state.contractYears;
+      document.getElementById("ch2-roi").textContent = `ROI: ${invRoi.toFixed(1)}% (${invRoiPerYear.toFixed(1)}%/năm)`;
+  }
+
+  // Chart 2 (Ngân hàng)
+  if (state.loanAmount === 0) {
+      document.getElementById("ch3-stat-container").style.display = "none";
+  } else {
+      document.getElementById("ch3-stat-container").style.display = "block";
+      document.getElementById("ch3-stat").textContent = fmtTrieu(result.totalLoanPaid);
+  }
+
+  if (result.breakEven) {
+    const totalBeMonths = result.breakEven.month;
+    let beYears = Math.floor(totalBeMonths / 12), beMonths = Math.round(totalBeMonths % 12);
+    if (beMonths === 12) { beYears++; beMonths = 0; }
+    document.getElementById("be-pill").textContent = `Hòa vốn Chủ nhà: ${beYears} năm ${beMonths} tháng`;
+  } else { document.getElementById("be-pill").textContent = ""; }
+
+  if (result.invBreakEven && state.invCapital > 0) {
+    const invTotalBeMonths = result.invBreakEven.month;
+    let invBeYears = Math.floor(invTotalBeMonths / 12), invBeMonths = Math.round(invTotalBeMonths % 12);
+    if (invBeMonths === 12) { invBeYears++; invBeMonths = 0; }
+    document.getElementById("inv-be-pill").textContent = `Hòa vốn NĐT: ${invBeYears} năm ${invBeMonths} tháng`;
+    document.getElementById("inv-be-pill").style.display = "inline-block";
+  } else { document.getElementById("inv-be-pill").style.display = "none"; }
+
+  if (state.loanAmount > 0) {
+    document.getElementById("df-pill").textContent = `Hết nợ Bank: Năm thứ ${state.loanYears}`;
+    document.getElementById("df-pill").style.display = "inline-block";
+  } else { document.getElementById("df-pill").style.display = "none"; }
+
+  document.getElementById("chart").innerHTML = buildChartSVG(result.monthlyOwner, result.breakEven, state.contractYears, result.debtClearedMonth);
+  document.getElementById("inv-chart").innerHTML = buildInvChartSVG(result.monthlyInvestor, result.invBreakEven, state.contractYears, state.invCapital);
+  document.getElementById("loan-chart").innerHTML = buildLoanChartSVG(result.loanSchedule);
+}
+
+/* ---------------- Mouse & Touch Handlers cho Biểu đồ ---------------- */
+function getClientPos(e) {
+  if (e.touches && e.touches.length > 0) return { clientX: e.touches[0].clientX, clientY: e.touches[0].clientY };
+  return { clientX: e.clientX, clientY: e.clientY };
+}
+
+function handleChartHover(e) {
+  if (e.cancelable) e.preventDefault(); // Chống cuộn trang khi chạm biểu đồ
+  if (!window._chartLayout || currentMonthlyData.length === 0) return;
+  const layout = window._chartLayout, svgEl = document.querySelector('#chart svg');
+  if (!svgEl) return;
+
+  const rect = svgEl.getBoundingClientRect(), pos = getClientPos(e);
+  const mouseX = pos.clientX - rect.left;
+  const scaleX = svgEl.clientWidth / svgEl.viewBox.baseVal.width;
+  const relX = (mouseX / scaleX) - layout.margin.left;
+  
+  if (relX < -20 || relX > layout.chartW + 20) { hideTooltip(); return; }
+
+  const targetMonth = Math.round((Math.max(0, Math.min(layout.chartW, relX)) / layout.chartW) * layout.totalMonths);
+  const dataPoint = currentMonthlyData.find(d => d.month === targetMonth);
+  if (!dataPoint) return;
+
+  const val = dataPoint.value, monthlyCF = dataPoint.monthlyCF || 0;
+  const pixelX = layout.margin.left + (targetMonth / layout.totalMonths) * layout.chartW;
+  const pixelY = layout.margin.top + layout.chartH - ((val - layout.minV) / (layout.maxV - layout.minV)) * layout.chartH;
+
+  document.getElementById("guideline-x").setAttribute("x1", pixelX); document.getElementById("guideline-x").setAttribute("x2", pixelX); document.getElementById("guideline-x").style.display = "block";
+  document.getElementById("guideline-y").setAttribute("y1", pixelY); document.getElementById("guideline-y").setAttribute("y2", pixelY); document.getElementById("guideline-y").style.display = "block";
+  document.getElementById("hover-dot").setAttribute("cx", pixelX); document.getElementById("hover-dot").setAttribute("cy", pixelY); document.getElementById("hover-dot").style.display = "block";
+
+  const tooltip = document.getElementById("tooltip");
+  if (targetMonth === 0) {
+      document.getElementById("tt-year").textContent = "Khởi đầu Chủ nhà (Ngày 0)";
+      document.getElementById("tt-monthly-row").style.display = "none";
+  } else {
+      document.getElementById("tt-year").textContent = `Cuối Tháng ${targetMonth} (Năm ${Math.ceil(targetMonth/12)})`;
+      document.getElementById("tt-monthly-row").style.display = "block";
+      document.getElementById("tt-monthly-label").textContent = monthlyCF >= 0 ? "Lãi tháng này: " : "Lỗ tháng này: ";
+      document.getElementById("tt-monthly-val").textContent = fmtTrieu(Math.abs(monthlyCF));
+      document.getElementById("tt-monthly-val").style.color = monthlyCF >= 0 ? "var(--green)" : "var(--red)";
+  }
+  document.getElementById("tt-val").textContent = fmtTrieu(val);
+  document.getElementById("tt-val").style.color = val >= 0 ? "var(--green)" : "var(--red)";
+
+  tooltip.style.display = "block";
+  let posX = pos.clientX - document.querySelector('#tab-owner .card-panel').getBoundingClientRect().left + 20; 
+  if (posX + tooltip.offsetWidth > document.querySelector('#tab-owner .card-panel').clientWidth - 10) posX -= (tooltip.offsetWidth + 40);
+  let posY = pos.clientY - document.querySelector('#tab-owner .card-panel').getBoundingClientRect().top - 60;  
+  if (posY < 0) posY = 10;
+  tooltip.style.left = `${posX}px`; tooltip.style.top = `${posY}px`;
+}
+function hideTooltip() {
+  document.getElementById("tooltip").style.display = "none";
+  if(document.getElementById("guideline-x")) document.getElementById("guideline-x").style.display = "none";
+  if(document.getElementById("guideline-y")) document.getElementById("guideline-y").style.display = "none";
+  if(document.getElementById("hover-dot")) document.getElementById("hover-dot").style.display = "none";
+}
+
+function handleInvChartHover(e) {
+  if (e.cancelable) e.preventDefault();
+  if (!window._invChartLayout || currentMonthlyInvData.length === 0) return;
+  const layout = window._invChartLayout, svgEl = document.querySelector('#inv-chart svg');
+  if (!svgEl) return;
+
+  const rect = svgEl.getBoundingClientRect(), pos = getClientPos(e);
+  const relX = ((pos.clientX - rect.left) / (svgEl.clientWidth / svgEl.viewBox.baseVal.width)) - layout.margin.left;
+  if (relX < -20 || relX > layout.chartW + 20) { hideInvTooltip(); return; }
+
+  const targetMonth = Math.round((Math.max(0, Math.min(layout.chartW, relX)) / layout.chartW) * layout.totalMonths);
+  const dataPoint = currentMonthlyInvData.find(d => d.month === targetMonth);
+  if (!dataPoint) return;
+
+  const val = dataPoint.value, monthlyCF = dataPoint.monthlyCF || 0;
+  const pixelX = layout.margin.left + (targetMonth / layout.totalMonths) * layout.chartW;
+  const pixelY = layout.margin.top + layout.chartH - ((val - layout.minV) / (layout.maxV - layout.minV)) * layout.chartH;
+
+  document.getElementById("inv-guideline-x").setAttribute("x1", pixelX); document.getElementById("inv-guideline-x").setAttribute("x2", pixelX); document.getElementById("inv-guideline-x").style.display = "block";
+  document.getElementById("inv-guideline-y").setAttribute("y1", pixelY); document.getElementById("inv-guideline-y").setAttribute("y2", pixelY); document.getElementById("inv-guideline-y").style.display = "block";
+  document.getElementById("inv-hover-dot").setAttribute("cx", pixelX); document.getElementById("inv-hover-dot").setAttribute("cy", pixelY); document.getElementById("inv-hover-dot").style.display = "block";
+
+  const tooltip = document.getElementById("inv-tooltip");
+  if (targetMonth === 0) {
+      document.getElementById("itt-year").textContent = "Khởi đầu NĐT (Ngày 0)";
+      document.getElementById("itt-monthly-row").style.display = "none";
+  } else {
+      document.getElementById("itt-year").textContent = `Cuối Tháng ${targetMonth} (Năm ${Math.ceil(targetMonth/12)})`;
+      document.getElementById("itt-monthly-row").style.display = "block";
+      document.getElementById("itt-monthly-val").textContent = fmtTrieu(monthlyCF);
+      document.getElementById("itt-monthly-val").style.color = "var(--green)";
+  }
+  document.getElementById("itt-val").textContent = fmtTrieu(val);
+  document.getElementById("itt-val").style.color = val >= 0 ? "var(--green)" : "var(--red)";
+
+  tooltip.style.display = "block";
+  let posX = pos.clientX - document.querySelector('#tab-investor .card-panel').getBoundingClientRect().left + 20; 
+  if (posX + tooltip.offsetWidth > document.querySelector('#tab-investor .card-panel').clientWidth - 10) posX -= (tooltip.offsetWidth + 40);
+  let posY = pos.clientY - document.querySelector('#tab-investor .card-panel').getBoundingClientRect().top - 60;  
+  if (posY < 0) posY = 10;
+  tooltip.style.left = `${posX}px`; tooltip.style.top = `${posY}px`;
+}
+function hideInvTooltip() {
+  document.getElementById("inv-tooltip").style.display = "none";
+  if(document.getElementById("inv-guideline-x")) document.getElementById("inv-guideline-x").style.display = "none";
+  if(document.getElementById("inv-guideline-y")) document.getElementById("inv-guideline-y").style.display = "none";
+  if(document.getElementById("inv-hover-dot")) document.getElementById("inv-hover-dot").style.display = "none";
+}
+
+function handleLoanChartHover(e) {
+  if (e.cancelable) e.preventDefault();
+  if (!window._loanChartLayout || currentLoanSchedule.length === 0) return;
+  const layout = window._loanChartLayout, svgEl = document.querySelector('#loan-chart svg');
+  if (!svgEl) return;
+
+  const rect = svgEl.getBoundingClientRect(), pos = getClientPos(e);
+  const relX = ((pos.clientX - rect.left) / (svgEl.clientWidth / svgEl.viewBox.baseVal.width)) - layout.margin.left;
+  if (relX < -20 || relX > layout.chartW + 20) { hideLoanTooltip(); return; }
+
+  const targetMonth = Math.round(1 + (Math.max(0, Math.min(layout.chartW, relX)) / layout.chartW) * (layout.totalMonths - 1));
+  const m = Math.max(1, Math.min(layout.totalMonths, targetMonth));
+  const data = currentLoanSchedule[m - 1]; 
+
+  const pixelX = layout.margin.left + ((m - 1) / Math.max(1, layout.totalMonths - 1)) * layout.chartW;
+  const pixelY_int = layout.margin.top + layout.chartH - (data.interest / layout.maxV) * layout.chartH;
+  const pixelY_prin = layout.margin.top + layout.chartH - (data.principal / layout.maxV) * layout.chartH;
+
+  document.getElementById("loan-guideline-x").setAttribute("x1", pixelX); document.getElementById("loan-guideline-x").setAttribute("x2", pixelX); document.getElementById("loan-guideline-x").style.display = "block";
+  document.getElementById("loan-hover-dot-int").setAttribute("cx", pixelX); document.getElementById("loan-hover-dot-int").setAttribute("cy", pixelY_int); document.getElementById("loan-hover-dot-int").style.display = "block";
+  document.getElementById("loan-hover-dot-prin").setAttribute("cx", pixelX); document.getElementById("loan-hover-dot-prin").setAttribute("cy", pixelY_prin); document.getElementById("loan-hover-dot-prin").style.display = "block";
+
+  const tooltip = document.getElementById("loan-tooltip");
+  document.getElementById("lt-month").textContent = `Kỳ trả nợ: Tháng thứ ${m}`;
+  document.getElementById("lt-total").textContent = fmtTrieu(data.total);
+  document.getElementById("lt-principal").textContent = fmtTrieu(data.principal);
+  document.getElementById("lt-interest").textContent = fmtTrieu(data.interest);
+  if (data.cumulativeTotal) document.getElementById("lt-cumulative").textContent = fmtTrieu(data.cumulativeTotal);
+
+  tooltip.style.display = "block";
+  let posX = pos.clientX - document.querySelector('#tab-bank .card-panel').getBoundingClientRect().left + 20; 
+  if (posX + tooltip.offsetWidth > document.querySelector('#tab-bank .card-panel').clientWidth - 10) posX -= (tooltip.offsetWidth + 40);
+  let posY = pos.clientY - document.querySelector('#tab-bank .card-panel').getBoundingClientRect().top - 90;  
+  if (posY < 0) posY = 10;
+  tooltip.style.left = `${posX}px`; tooltip.style.top = `${posY}px`;
+}
+function hideLoanTooltip() {
+  document.getElementById("loan-tooltip").style.display = "none";
+  if(document.getElementById("loan-guideline-x")) document.getElementById("loan-guideline-x").style.display = "none";
+  if(document.getElementById("loan-hover-dot-int")) document.getElementById("loan-hover-dot-int").style.display = "none";
+  if(document.getElementById("loan-hover-dot-prin")) document.getElementById("loan-hover-dot-prin").style.display = "none";
+}
+
+render();
+</script>
+</body>
+</html>
