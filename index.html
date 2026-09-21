@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>Dashboard Tài Chính CCMN (Tính ROI Chuẩn Vốn Thực Chi)</title>
+<title>Dashboard Tài Chính CCMN (Thêm Lũy kế vay vào Tooltip)</title>
 <style>
   :root {
     --bg: #f4f6fb; --surface: #ffffff; --surface-2: #f8fafc; --border: #e2e8f0;
@@ -97,6 +97,7 @@
   .be-pill { font-size: 14px; font-weight: 700; padding: 6px 12px; border-radius: 8px; background: var(--amber-soft); color: var(--amber); margin-right: 8px;}
   .df-pill { font-size: 14px; font-weight: 700; padding: 6px 12px; border-radius: 8px; background: var(--accent-soft); color: var(--accent); }
   .roi-pill { font-size: 13px; font-weight: 700; padding: 4px 8px; border-radius: 6px; background: var(--surface-2); border: 1px solid var(--border); color: var(--text); margin-left: 8px;}
+  .roi-infinite { background: var(--purple-soft); color: var(--purple); border-color: var(--purple); }
   .scrollx { overflow-x: hidden; position: relative; padding-bottom: 10px; }
   
   /* Tooltip Styles */
@@ -114,7 +115,7 @@
 <body>
 <div class="wrap">
   <h1>🏢 Dashboard Tài Chính CCMN</h1>
-  <p class="subtitle">Tính toán ROI chuẩn xác dựa trên số vốn thực chi từ tài sản thế chấp vào dự án.</p>
+  <p class="subtitle">Mô hình phân tách lợi nhuận, biểu đồ dòng tiền & lưu trữ kịch bản XML.</p>
 
   <!-- Thanh công cụ Save/Load -->
   <div class="actions">
@@ -127,7 +128,7 @@
     <div class="card scard">
       <span class="title">Doanh thu thuần / tháng</span>
       <span class="value" id="c0-value" style="color:var(--green)"></span>
-      <span class="sub">Thực thu (theo lấp đầy) − Phí vận hành</span>
+      <span class="sub">Trung bình toàn kỳ</span>
       <span class="pill" id="c0-pill" style="background:var(--green-soft);color:var(--green)"></span>
     </div>
     <div class="card scard">
@@ -219,9 +220,12 @@
       <div id="loan-chart" onmousemove="handleLoanChartHover(event)" onmouseleave="hideLoanTooltip()"></div>
       <div id="loan-tooltip" class="tooltip">
         <div class="tt-head" id="lt-month"></div>
-        <div style="margin-bottom:6px;">Tổng thu ngân hàng: <span class="tt-val" id="lt-total" style="color:var(--text)"></span></div>
+        <div style="margin-bottom:6px;">Trả tháng này: <span class="tt-val" id="lt-total" style="color:var(--text)"></span></div>
         <div style="font-size: 13px; color: var(--text-dim); margin-bottom:4px;">- Tiền Gốc: <span class="tt-val" id="lt-principal" style="color:var(--accent)"></span></div>
         <div style="font-size: 13px; color: var(--text-dim)">- Tiền Lãi: <span class="tt-val" id="lt-interest" style="color:var(--red)"></span></div>
+        <div style="margin-top:8px; padding-top:8px; border-top:1px dashed var(--border); font-size: 13px; color: var(--text-dim);">
+          Lũy kế đã trả: <span class="tt-val" id="lt-cumulative" style="color:var(--text)"></span>
+        </div>
       </div>
     </div>
   </div>
@@ -235,18 +239,25 @@
         <div id="f-capex"></div>
         <div id="f-revenueMax"></div>
         <div id="f-opCost"></div>
-        <div id="f-occupancy"></div>
+        
+        <!-- BẢNG LẤP ĐẦY TỪNG NĂM -->
+        <div class="field" style="margin-top: 24px; border-top: 1px dashed var(--border); padding-top: 18px;">
+          <div class="field-top"><label>Tỷ lệ Lấp đầy Từng năm (%)</label></div>
+          <div class="sub" style="font-size: 13px; color: var(--text-dim);">Tự động kế thừa mức lấp đầy của năm trước đó.</div>
+          <div class="rent-grid" id="occ-grid-container"></div>
+        </div>
+        
         <div class="miniinfo">
-          <div class="row"><span>Doanh thu thuần / tháng</span><span id="mi-netRev" style="color: var(--green);"></span></div>
+          <div class="row"><span>Doanh thu thuần TB / tháng</span><span id="mi-netRev" style="color: var(--green);"></span></div>
         </div>
       </div>
       
       <div class="subcard">
-        <h3>🏠 Trượt giá Thuê nhà</h3>
+        <h3>🏠 Hợp đồng & Giá thuê nhà</h3>
         <div id="f-contractYears"></div>
         <div id="f-upfrontRentMonths"></div>
         <div class="field" style="margin-top: 24px; border-top: 1px dashed var(--border); padding-top: 18px;">
-          <div class="field-top"><label>Bảng giá thuê (Triệu VNĐ/Tháng)</label></div>
+          <div class="field-top"><label>Giá thuê trả Chủ nhà (Triệu VNĐ/Tháng)</label></div>
           <div class="sub" style="font-size: 13px; color: var(--text-dim);">Tự động kế thừa mức giá của năm trước đó.</div>
           <div class="rent-grid" id="rent-grid-container"></div>
         </div>
@@ -292,13 +303,13 @@ const state = {
   upfrontRentMonths: 12,
   revenueMax: 42000000,
   opCost: 2500000,
-  occupancy: 90,
   contractYears: 10,
   loanAmount: 650000000,
   loanAmountActual: 550000000,
   ratePct: 10.5,
   loanYears: 5,
   rentSchedule: Array(25).fill(17000000),
+  occupancySchedule: Array(25).fill(90),
   
   invCapital: 200000000,
   invPrefDiv: 0,
@@ -318,12 +329,12 @@ function saveToXML() {
 
     let xml = '<?xml version="1.0" encoding="UTF-8"?>\n<DashboardState>\n';
     for (let key in state) {
-        if (key === 'rentSchedule') {
-            xml += '  <rentSchedule>\n';
+        if (key === 'rentSchedule' || key === 'occupancySchedule') {
+            xml += `  <${key}>\n`;
             state[key].forEach((val, idx) => {
                 xml += `    <year index="${idx}">${val}</year>\n`;
             });
-            xml += '  </rentSchedule>\n';
+            xml += `  </${key}>\n`;
         } else {
             xml += `  <${key}>${state[key]}</${key}>\n`;
         }
@@ -355,12 +366,13 @@ function loadFromXML(event) {
             }
 
             for (let key in state) {
-                if (key === 'rentSchedule') {
-                    const rentNodes = xmlDoc.getElementsByTagName("year");
-                    if (rentNodes.length > 0) {
-                        for (let i = 0; i < rentNodes.length; i++) {
-                            const idx = parseInt(rentNodes[i].getAttribute("index"));
-                            state[rentSchedule[idx]] = parseFloat(rentNodes[i].textContent); // Fix index map
+                if (key === 'rentSchedule' || key === 'occupancySchedule') {
+                    const listNodes = xmlDoc.getElementsByTagName(key);
+                    if (listNodes.length > 0) {
+                        const yearNodes = listNodes[0].getElementsByTagName("year");
+                        for (let i = 0; i < yearNodes.length; i++) {
+                            const idx = parseInt(yearNodes[i].getAttribute("index"));
+                            state[key][idx] = parseFloat(yearNodes[i].textContent);
                         }
                     }
                 } else {
@@ -381,6 +393,7 @@ function loadFromXML(event) {
             });
 
             buildRentGrid();
+            buildOccGrid();
             render();
             
         } catch (err) {
@@ -400,7 +413,7 @@ function fmtTrieu(v) {
   return new Intl.NumberFormat("vi-VN", { maximumFractionDigits: 1, minimumFractionDigits: 1 }).format(trieu) + " triệu";
 }
 
-/* ---------------- Build Rent Grid ---------------- */
+/* ---------------- Build Rent & Occ Grid ---------------- */
 function buildRentGrid() {
   const container = document.getElementById("rent-grid-container");
   container.innerHTML = "";
@@ -433,6 +446,40 @@ document.getElementById("rent-grid-container").addEventListener("input", (e) => 
   }
 });
 
+function buildOccGrid() {
+  const container = document.getElementById("occ-grid-container");
+  container.innerHTML = "";
+  for (let i = 0; i < state.contractYears; i++) {
+    const valOcc = Number((state.occupancySchedule[i]).toFixed(1));
+    const html = `
+      <div class="rent-item">
+        <span>Năm ${i + 1}</span>
+        <input type="number" class="occ-input" data-year="${i}" step="1" value="${valOcc}" />
+      </div>
+    `;
+    container.insertAdjacentHTML('beforeend', html);
+  }
+}
+
+document.getElementById("occ-grid-container").addEventListener("input", (e) => {
+  if(e.target.classList.contains("occ-input")) {
+    const yearIdx = parseInt(e.target.getAttribute("data-year"));
+    let val = parseFloat(e.target.value);
+    if(isNaN(val)) val = 0;
+    if(val > 100) val = 100;
+    if(val < 0) val = 0;
+    
+    state.occupancySchedule[yearIdx] = val;
+    
+    for (let i = yearIdx + 1; i < state.contractYears; i++) {
+        state.occupancySchedule[i] = val;
+        const nextInput = document.querySelector(`.occ-input[data-year="${i}"]`);
+        if (nextInput) nextInput.value = val;
+    }
+    render();
+  }
+});
+
 /* ---------------- Thuật toán Tài chính ---------------- */
 function calcFinance(s) {
   let upfrontRentTotal = 0;
@@ -442,12 +489,8 @@ function calcFinance(s) {
     upfrontRentTotal += s.rentSchedule[yearIdx];
   }
 
-  // TÍNH VỐN BỎ RA CỦA CHỦ NHÀ: Lấy tổng Capex + Tiền nhà trả trước - Thực chi từ thế chấp - Vốn NĐT
   let actualLoanUsed = Math.min(s.loanAmountActual, s.loanAmount);
   const initialOwnerCashOut = s.capex + upfrontRentTotal - actualLoanUsed - s.invCapital;
-  
-  const monthlyRevenue = s.revenueMax * (s.occupancy / 100);
-  const netRevenueMonthly = monthlyRevenue - s.opCost;
 
   const totalLoanMonths = Math.round(s.loanYears * 12);
   const monthlyPrincipal = totalLoanMonths > 0 ? s.loanAmount / totalLoanMonths : 0;
@@ -474,9 +517,15 @@ function calcFinance(s) {
 
   let minOwnerCF = Infinity;
   let maxOwnerCF = -Infinity;
+  let totalNetRevenue = 0;
 
   for (let m = 1; m <= totalMonths; m++) {
     let currentYearIdx = Math.floor((m - 1) / 12);
+    
+    let currentOcc = s.occupancySchedule[currentYearIdx];
+    let monthlyRevenue = s.revenueMax * (currentOcc / 100);
+    let netRevenueMonthly = monthlyRevenue - s.opCost;
+    totalNetRevenue += netRevenueMonthly;
     
     let futureMonth = m + s.upfrontRentMonths;
     let rentCashOutflow = 0;
@@ -495,7 +544,8 @@ function calcFinance(s) {
             month: m,
             total: debtCashOutflow,
             principal: monthlyPrincipal,
-            interest: interestPayment
+            interest: interestPayment,
+            cumulativeTotal: totalLoanPaid // LƯU LŨY KẾ VÀO ĐÂY
         });
 
         if (m === 1) firstMonthDebt = debtCashOutflow;
@@ -552,10 +602,17 @@ function calcFinance(s) {
   if (minOwnerCF === Infinity) minOwnerCF = 0;
   if (maxOwnerCF === -Infinity) maxOwnerCF = 0;
 
+  let avgNetRevenue = totalMonths > 0 ? totalNetRevenue / totalMonths : 0;
+
   let sampleNormalMonth = s.invPrefMonths + 1;
+  let sampleYearIdx = Math.floor((sampleNormalMonth - 1) / 12);
+  if (sampleYearIdx >= s.contractYears) sampleYearIdx = s.contractYears - 1;
+  
   let sFutureMonthNormal = sampleNormalMonth + s.upfrontRentMonths;
   let sampleRentNormal = sFutureMonthNormal <= totalMonths ? s.rentSchedule[Math.floor((sFutureMonthNormal - 1) / 12)] : 0;
-  let sampleProjectCF = monthlyRevenue - sampleRentNormal - s.opCost - 0; 
+  
+  let sampleRev = s.revenueMax * (s.occupancySchedule[sampleYearIdx] / 100);
+  let sampleProjectCF = sampleRev - sampleRentNormal - s.opCost - 0; 
   let invNormalMonthly = sampleProjectCF > 0 ? sampleProjectCF * (s.invEquityPct / 100) : 0;
 
   let breakEvenMonth = null;
@@ -587,11 +644,13 @@ function calcFinance(s) {
   let tempTargetInv = projectProfits_Pref * (s.invEquityPct / 100);
   let expectedDebt = Math.max(0, invActualReceived - tempTargetInv);
 
-  // TÍNH ROI CHUẨN XÁC DỰA TRÊN VỐN THỰC BỎ RA (initialOwnerCashOut)
   let ownerFinalProfit = monthlyOwner[monthlyOwner.length - 1].value;
   let ownerROI = 0;
+  let isInfiniteOwnerROI = false;
   if (initialOwnerCashOut > 0) {
       ownerROI = (ownerFinalProfit / initialOwnerCashOut) * 100;
+  } else if (ownerFinalProfit > 0) {
+      isInfiniteOwnerROI = true;
   }
 
   let invFinalProfit = monthlyInvestor[monthlyInvestor.length - 1].value;
@@ -601,7 +660,7 @@ function calcFinance(s) {
   }
 
   return {
-    netRevenueMonthly,
+    avgNetRevenue,
     initialOwnerCashOut, firstMonthDebt, lastMonthDebt,
     totalLoanPaid, 
     minOwnerCF, maxOwnerCF, 
@@ -611,7 +670,7 @@ function calcFinance(s) {
     invBreakEven: invBreakEvenMonth !== null ? { month: invBreakEvenMonth, value: 0 } : null,
     debtClearedMonth,
     finalProfit: ownerFinalProfit,
-    ownerROI, invROI,
+    ownerROI, isInfiniteOwnerROI, invROI,
     invActualReceived, expectedDebt, invClearedMonth
   };
 }
@@ -628,8 +687,6 @@ const fieldDefs = {
     money: true, inputStep: 0.5, inputMin: 0, inputMax: 100 },
   opCost: { label: "Phí vận hành / tháng", min: 0, max: 20000000, sliderStep: 100000,
     money: true, inputStep: 0.1, inputMin: 0, inputMax: 20 },
-  occupancy: { label: "Tỷ lệ lấp đầy kỳ vọng", min: 70, max: 100, sliderStep: 1,
-    money: false, unitSuffix: "%", inputStep: 1, inputMin: 70, inputMax: 100 },
     
   loanAmount: { label: "Vay ngân hàng (Tổng nợ)", min: 0, max: 3000000000, sliderStep: 10000000,
     money: true, inputStep: 1, inputMin: 0, inputMax: 3000 },
@@ -713,7 +770,11 @@ function buildField(key) {
     }
 
     numEl.value = toInputVal(key);
-    if(key === 'contractYears') buildRentGrid(); 
+    
+    if(key === 'contractYears') {
+        buildRentGrid();
+        buildOccGrid();
+    }
     render();
   });
 
@@ -740,7 +801,10 @@ function buildField(key) {
     }
 
     rangeEl.value = state[key];
-    if(key === 'contractYears') buildRentGrid();
+    if(key === 'contractYears') {
+        buildRentGrid();
+        buildOccGrid();
+    }
     render();
   });
   numEl.addEventListener("blur", (e) => {
@@ -750,6 +814,7 @@ function buildField(key) {
 
 Object.keys(fieldDefs).forEach(buildField);
 buildRentGrid();
+buildOccGrid();
 
 /* ---------------- Main Chart SVG (Chủ nhà) ---------------- */
 function buildChartSVG(monthlyData, breakEven, contractYears, debtClearedMonth) {
@@ -991,7 +1056,10 @@ function toneOf(v) {
 
 function render() {
   Object.keys(fieldDefs).forEach((key) => {
-    document.getElementById("badge-" + key).textContent = badgeText(key);
+    if(key !== 'occupancy') {
+        const badgeEl = document.getElementById("badge-" + key);
+        if(badgeEl) badgeEl.textContent = badgeText(key);
+    }
   });
 
   const result = calcFinance(state);
@@ -999,7 +1067,7 @@ function render() {
   currentMonthlyInvData = result.monthlyInvestor;
   currentLoanSchedule = result.loanSchedule;
 
-  document.getElementById("mi-netRev").textContent = fmtTrieu(result.netRevenueMonthly) + "/tháng";
+  document.getElementById("mi-netRev").textContent = fmtTrieu(result.avgNetRevenue) + "/tháng";
   document.getElementById("mi-totalLoan").textContent = fmtTrieu(result.totalLoanPaid);
   document.getElementById("mi-invMonthlyPref").textContent = fmtTrieu(result.invMonthlyPref) + "/tháng";
   document.getElementById("mi-invMonthlyNormal").textContent = fmtTrieu(result.invNormalMonthly) + "/tháng (ước tính tối đa)";
@@ -1008,10 +1076,10 @@ function render() {
   document.getElementById("mi-invCleared").textContent = result.invClearedMonth > 0 ? `Tháng thứ ${result.invClearedMonth}` : "Không phát sinh";
 
   // Thẻ 0
-  const t0 = toneOf(result.netRevenueMonthly);
-  document.getElementById("c0-value").textContent = fmtTrieu(result.netRevenueMonthly);
+  const t0 = toneOf(result.avgNetRevenue);
+  document.getElementById("c0-value").textContent = fmtTrieu(result.avgNetRevenue);
   document.getElementById("c0-value").style.color = t0.fg;
-  document.getElementById("c0-pill").textContent = fmtVND(result.netRevenueMonthly);
+  document.getElementById("c0-pill").textContent = fmtVND(result.avgNetRevenue);
   document.getElementById("c0-pill").style.background = t0.bg;
   document.getElementById("c0-pill").style.color = t0.fg;
 
@@ -1063,10 +1131,14 @@ function render() {
       let roi = result.ownerROI;
       let roiPerYear = roi / state.contractYears;
       document.getElementById("ch1-roi").textContent = `ROI: ${roi.toFixed(1)}% (${roiPerYear.toFixed(1)}%/năm)`;
+      document.getElementById("ch1-roi").className = "roi-pill";
+      document.getElementById("ch1-roi").style.display = "inline-block";
+  } else if (result.isInfiniteOwnerROI) {
+      document.getElementById("ch1-roi").textContent = `ROI: ∞ (Tay không bắt giặc)`;
+      document.getElementById("ch1-roi").className = "roi-pill roi-infinite";
       document.getElementById("ch1-roi").style.display = "inline-block";
   } else {
-      document.getElementById("ch1-roi").textContent = `ROI: ∞% (Vô cực)`;
-      document.getElementById("ch1-roi").style.display = "inline-block";
+      document.getElementById("ch1-roi").style.display = "none";
   }
 
   // Cập nhật Thống kê trên Chart 3 (Cổ đông) + ROI
@@ -1377,6 +1449,11 @@ function handleLoanChartHover(e) {
   document.getElementById("lt-total").textContent = fmtTrieu(data.total);
   document.getElementById("lt-principal").textContent = fmtTrieu(data.principal);
   document.getElementById("lt-interest").textContent = fmtTrieu(data.interest);
+  
+  // Hiển thị Lũy kế vay
+  if (data.cumulativeTotal) {
+      document.getElementById("lt-cumulative").textContent = fmtTrieu(data.cumulativeTotal);
+  }
 
   tooltip.style.display = "block";
   const ttWidth = tooltip.offsetWidth;
