@@ -398,7 +398,6 @@
           <div id="tooltip" class="tooltip">
             <div class="tt-head" id="tt-year"></div>
             <div style="margin-bottom:4px;">Tài sản ròng tích lũy: <span class="tt-val" id="tt-val"></span></div>
-            <!-- BỔ SUNG HTML THIẾU Ở ĐÂY ĐỂ TRÁNH LỖI MẤT TOOLTIP -->
             <div id="tt-monthly-row" style="font-size: 13px; color: var(--text-dim)">
               <span id="tt-monthly-label">Tăng/giảm tài sản:</span> <span class="tt-val" id="tt-monthly-val"></span>
             </div>
@@ -486,11 +485,10 @@
         <h3>💰 Vốn Đầu tư & Kinh doanh</h3>
         <div id="f-capex"></div>
         <div id="f-ownerEquity"></div> 
-        <div id="f-reserveFund"></div> <!-- MỤC MỚI: QUỸ DỰ PHÒNG -->
+        <div id="f-reserveFund"></div> 
         <div id="f-revenueMax"></div>
         <div id="f-opCost"></div>
         
-        <!-- HIỂN THỊ TỶ LỆ GÓP VỐN CỦA NĐT TRỰC QUAN TRONG SETTINGS -->
         <div class="miniinfo" style="margin-top: 16px;">
           <div class="row"><span>Tỷ lệ vốn NĐT / Tổng đầu tư</span><span id="mi-invRatio" style="color: var(--purple);"></span></div>
           <div class="row"><span>Doanh thu thuần TB / tháng</span><span id="mi-netRev" style="color: var(--green);"></span></div>
@@ -533,7 +531,7 @@
         <div class="miniinfo">
           <div class="row"><span>Tiền NĐT / tháng (Ưu tiên)</span><span id="mi-invMonthlyPref" style="color: var(--purple);"></span></div>
           <div class="row"><span>Tiền NĐT / tháng (Cổ phần)</span><span id="mi-invMonthlyNormal" style="color: var(--green);"></span></div>
-          <!-- ĐÃ FIX: KHÔI PHỤC HIỂN THỊ DỮ LIỆU BỊ TRỐNG -->
+          <!-- ĐÃ FIX: KHÔI PHỤC HIỂN THỊ DỮ LIỆU CỦA NĐT -->
           <div class="row"><span>Tạm ứng thực nhận (GĐ 1)</span><span id="mi-invAdvance"></span></div>
           <div class="row"><span>Dự kiến NĐT nợ lại</span><span id="mi-invDebt" style="color: var(--red);"></span></div>
           <div class="row"><span>Tháng NĐT hết nợ cấn trừ</span><span id="mi-invCleared"></span></div>
@@ -551,7 +549,7 @@
 const state = {
   capex: 600000000, 
   ownerEquity: 0,
-  reserveFund: 0, // MỚI: Quỹ dự phòng
+  reserveFund: 0,
   upfrontRentMonths: 12,
   revenueMax: 42000000,
   opCost: 2500000,
@@ -763,11 +761,11 @@ function calcFinance(s) {
   // TỔNG VỐN ĐẦU TƯ BAN ĐẦU
   const totalProjectInvestment = s.capex + upfrontRentTotal;
 
-  // LƯỢNG TIỀN HUY ĐỘNG (+ Quỹ dự phòng)
+  // LƯỢNG TIỀN HUY ĐỘNG
   let actualLoanUsed = Math.min(s.loanAmountActual, s.loanAmount);
   let totalFundRaised = actualLoanUsed + s.invCapital + s.ownerEquity + s.reserveFund;
 
-  // THIẾU HỤT / DƯ THỪA TIỀN MẶT
+  // THIẾU HỤT HOẶC DỰ PHÒNG TIỀN MẶT NGÀY 0
   let capitalShortfall = 0;
   let capitalSurplus = 0;
   if (totalFundRaised < totalProjectInvestment) {
@@ -868,7 +866,7 @@ function calcFinance(s) {
     let ownerAssetFlow = 0;
     let invCF = 0;
 
-    // --- LOGIC CLAWBACK & CẤN TRỪ HỒI TỐ NĐT ---
+    // --- LOGIC CLAWBACK TẠM ỨNG & CẤN TRỪ HỒI TỐ NĐT ---
     if (m <= s.invPrefMonths) {
         invCF = s.invPrefDiv;
         ownerCashFlow = projectCF_ForCash - invCF;
@@ -1122,17 +1120,9 @@ function buildGenericChartSVG(monthlyData, breakEven, contractYears, debtCleared
   const linePath = monthlyData.map((d, i) => `${i === 0 ? "M" : "L"} ${xScale(d.month).toFixed(2)} ${yScale(d.value).toFixed(2)}`).join(" ");
   const zeroY = yScale(0);
   
-  // Xử lý Area fill
-  let areaPath = "";
-  if (colorId === "cash") {
-     areaPath = `M ${xScale(0).toFixed(2)} ${zeroY.toFixed(2)} ` +
+  let areaPath = `M ${xScale(0).toFixed(2)} ${zeroY.toFixed(2)} ` +
         monthlyData.map(d => `L ${xScale(d.month).toFixed(2)} ${yScale(d.value).toFixed(2)}`).join(" ") +
         ` L ${xScale(totalMonths).toFixed(2)} ${zeroY.toFixed(2)} Z`;
-  } else {
-     areaPath = `M ${xScale(0).toFixed(2)} ${zeroY.toFixed(2)} ` +
-        monthlyData.map(d => `L ${xScale(d.month).toFixed(2)} ${yScale(d.value).toFixed(2)}`).join(" ") +
-        ` L ${xScale(totalMonths).toFixed(2)} ${zeroY.toFixed(2)} Z`;
-  }
 
   const yTicks = 4;
   let gridSvg = "";
@@ -1250,11 +1240,23 @@ function render() {
   document.getElementById("mi-invMonthlyPref").textContent = fmtTrieu(result.invMonthlyPref) + "/tháng";
   document.getElementById("mi-invMonthlyNormal").textContent = fmtTrieu(result.invNormalMonthly) + "/tháng (tối đa)";
   document.getElementById("mi-invRatio").textContent = result.invCapitalRatio.toFixed(1) + "% tổng đầu tư";
-  
-  // KHÔI PHỤC HIỂN THỊ DỮ LIỆU BỊ TRỐNG
+
+  // KHÔI PHỤC HIỂN THỊ DỮ LIỆU CỦA NĐT BỊ TRỐNG
   document.getElementById("mi-invAdvance").textContent = fmtTrieu(result.invActualReceived);
   document.getElementById("mi-invDebt").textContent = result.expectedDebt > 0 ? fmtTrieu(result.expectedDebt) : "0 (Không nợ)";
-  document.getElementById("mi-invCleared").textContent = result.invClearedMonth > 0 ? `Tháng thứ ${result.invClearedMonth}` : "Chưa / Không phát sinh";
+  
+  if (result.expectedDebt > 0) {
+      if (result.invClearedMonth > 0) {
+          document.getElementById("mi-invCleared").textContent = `Tháng thứ ${result.invClearedMonth}`;
+          document.getElementById("mi-invCleared").style.color = "var(--text)";
+      } else {
+          document.getElementById("mi-invCleared").textContent = "Không bao giờ hết nợ";
+          document.getElementById("mi-invCleared").style.color = "var(--red)";
+      }
+  } else {
+      document.getElementById("mi-invCleared").textContent = "Không phát sinh nợ";
+      document.getElementById("mi-invCleared").style.color = "var(--text)";
+  }
 
   // Thẻ Tổng Quy Mô Đầu Tư
   document.getElementById("c-total-inv-value").textContent = fmtTrieu(result.totalProjectInvestment);
@@ -1298,7 +1300,7 @@ function render() {
       if(result.capitalSurplus > 0) {
           surplusTag.textContent = "✅ Dự phòng: " + fmtTrieu(result.capitalSurplus);
           surplusTag.style.display = "inline-block";
-          c1SubEl.textContent = "Vốn ngoại lực dôi dư (Quỹ dự phòng)";
+          c1SubEl.textContent = "Vốn ngoại lực dư dả (Quỹ dự phòng)";
       } else {
           surplusTag.style.display = "none";
           c1SubEl.textContent = "Vốn tự có + Vay Bank";
@@ -1316,10 +1318,10 @@ function render() {
   document.getElementById("c0-pill").style.background = t0.bg;
   document.getElementById("c0-pill").style.color = t0.fg;
 
-  const t2 = toneOf(result.finalProfit);
-  document.getElementById("c2-value").textContent = fmtTrieu(result.finalProfit);
+  const t2 = toneOf(result.finalCash);
+  document.getElementById("c2-value").textContent = fmtTrieu(result.finalCash);
   document.getElementById("c2-value").style.color = t2.fg;
-  document.getElementById("c2-pill").textContent = fmtVND(result.finalProfit);
+  document.getElementById("c2-pill").textContent = fmtVND(result.finalCash);
   document.getElementById("c2-pill").style.background = t2.bg;
   document.getElementById("c2-pill").style.color = t2.fg;
 
@@ -1539,7 +1541,7 @@ function hideProjectTooltip() {
 // Handler Owner (Asset)
 function handleChartHover(e) {
   if (e.cancelable) e.preventDefault(); 
-  if (!window._chartLayout || currentMonthlyData.length === 0) return;
+  if (!window._chartLayout || currentMonthlyAssetData.length === 0) return;
   const layout = window._chartLayout, svgEl = document.querySelector('#chart svg');
   if (!svgEl) return;
 
@@ -1548,7 +1550,7 @@ function handleChartHover(e) {
   if (relX < -20 || relX > layout.chartW + 20) { hideTooltip(); return; }
 
   const targetMonth = Math.round((Math.max(0, Math.min(layout.chartW, relX)) / layout.chartW) * layout.totalMonths);
-  const dataPoint = currentMonthlyData.find(d => d.month === targetMonth);
+  const dataPoint = currentMonthlyAssetData.find(d => d.month === targetMonth);
   if (!dataPoint) return;
 
   const pixelX = layout.margin.left + (targetMonth / layout.totalMonths) * layout.chartW;
