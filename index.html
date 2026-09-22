@@ -118,6 +118,11 @@
       padding: 12px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; margin-bottom: 16px; display: none;
   }
 
+  /* TOGGLE BUTTONS */
+  .toggle-box { display: flex; background: var(--surface-2); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; width: fit-content; }
+  .tgl-btn { background: none; border: none; padding: 6px 12px; font-size: 12px; font-weight: 700; color: var(--text-dim); cursor: pointer; transition: 0.2s; white-space: nowrap;}
+  .tgl-btn.active { background: var(--accent); color: white; }
+
   /* Pills Chart */
   .be-pill, .df-pill { font-size: 13px; font-weight: 700; padding: 6px 10px; border-radius: 8px; display: inline-block; margin-bottom: 6px; margin-right: 6px;}
   .be-pill { background: var(--amber-soft); color: var(--amber); }
@@ -216,9 +221,16 @@
   .miniinfo .row { display: flex; justify-content: space-between; margin-bottom: 12px; }
   .miniinfo .row span:last-child { font-weight: 700; color: var(--text); }
   
-  .btn-sm { padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: bold; border: none; cursor: pointer;}
+  .btn-sm { padding: 8px 12px; border-radius: 6px; font-size: 13px; font-weight: bold; border: none; cursor: pointer; transition: 0.2s;}
+  .btn-sm:active { transform: scale(0.98); }
   .bg-green { background: var(--green-soft); color: var(--green); }
   .bg-accent { background: var(--accent-soft); color: var(--accent); }
+  .bg-amber { background: var(--amber-soft); color: var(--amber); }
+
+  /* Radio Buttons cho Vay Bank */
+  .radio-group { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
+  .radio-group label { font-size: 14px; display: flex; align-items: center; gap: 8px; cursor: pointer; color: var(--text); font-weight: 500;}
+  .radio-group input[type="radio"] { accent-color: var(--accent); transform: scale(1.2); }
 </style>
 </head>
 <body>
@@ -252,7 +264,7 @@
     <div class="card scard">
       <span class="title">Tổng quy mô đầu tư</span>
       <span class="value" id="c-total-inv-value" style="color:var(--accent)"></span>
-      <span class="sub">Cải tạo + Tiền nhà trả trước</span>
+      <span class="sub">Cải tạo + Tiền nhà trả trước (GĐ1)</span>
       <span class="pill" id="c-total-inv-pill" style="background:var(--accent-soft);color:var(--accent)"></span>
     </div>
 
@@ -287,8 +299,8 @@
     <div class="card scard">
       <span class="title">Nợ gốc & lãi Bank / tháng</span>
       <span class="value" id="c3-value" style="color:var(--red)"></span>
-      <span class="sub">Tháng đầu tiên (Nặng nhất) → Tháng cuối</span>
-      <span class="pill" id="c3-pill" style="background:var(--red-soft);color:var(--red)">Trả góp giảm dần</span>
+      <span class="sub" id="c3-sub">Tháng đầu tiên → Tháng cuối</span>
+      <span class="pill" id="c3-pill" style="background:var(--red-soft);color:var(--red)">Trả góp</span>
     </div>
 
     <!-- Thẻ 5: Dòng tiền Chủ nhà -->
@@ -303,7 +315,7 @@
     <div class="card scard">
       <span class="title">Lợi nhuận ròng Chủ nhà</span>
       <span class="value" id="c2-value"></span>
-      <span class="sub">Tổng lãi đút túi khi kết thúc dự án</span>
+      <span class="sub">Tổng tiền mặt đút túi khi kết thúc dự án</span>
       <span class="pill" id="c2-pill"></span>
     </div>
   </div>
@@ -324,7 +336,7 @@
         <div class="alert-banner" id="proj-alert-banner"></div>
         <div class="info-panel info-cyan">
             <strong>Mục đích:</strong> Đánh giá sức khỏe nội tại của Bất động sản này.<br>
-            <strong>Cách xem:</strong> Bỏ qua các yếu tố vay mượn cá nhân hay chia sẻ NĐT. Chỉ lấy Doanh thu trừ đi Phí vận hành và Tiền nhà để xem khả năng sinh lời nguyên bản của cái nhà.
+            <strong>Cách xem:</strong> Bỏ qua các yếu tố vay mượn cá nhân hay chia sẻ NĐT. Chỉ lấy Doanh thu trừ đi Phí vận hành và Khấu hao tiền nhà hàng tháng để xem khả năng sinh lời nguyên bản của cái nhà.
         </div>
         <div class="chart-head">
           <div>
@@ -353,12 +365,16 @@
       <div class="card-panel">
         <div class="alert-banner" id="cash-alert-banner"></div>
         <div class="info-panel info-green">
-            <strong>Mục đích:</strong> Đo lường số tiền mặt thực tế trong ví của Bạn. <br>
-            <strong>Cách xem:</strong> Nếu đường này cắt xuống dưới mốc 0, nghĩa là quỹ dự phòng bị cạn, bạn phải chuẩn bị sẵn tiền ở ngoài để bơm vào gồng lỗ cho tháng đó.
+            <strong>Mục đích:</strong> Đo lường số tiền mặt thực tế trong ví của Bạn. Thể hiện các cú sốc dòng tiền dựa theo kỳ thanh toán của Khách thuê và Chủ nhà.<br>
+            <strong>Cách xem:</strong> Nếu đường này cắt xuống dưới mốc 0, nghĩa là quỹ dự phòng bị cạn, bạn phải chuẩn bị sẵn tiền ở ngoài để bơm vào gồng lỗ.
         </div>
-        <div class="chart-head">
+        <div class="chart-head" style="display: flex; justify-content: space-between; align-items: flex-start;">
           <div>
             <div class="chart-summary" style="margin-bottom: 4px;">Tiền mặt dôi dư cuối kỳ: <span id="ch0-stat" style="font-size:16px; color:var(--green)"></span></div>
+          </div>
+          <div class="toggle-box">
+             <button id="btn-real" class="tgl-btn active" onclick="setCashView('real')">Thực tế</button>
+             <button id="btn-smooth" class="tgl-btn" onclick="setCashView('smooth')">Khấu hao</button>
           </div>
         </div>
         <div class="scroll-hint">👉 Vuốt sang trái để xem các năm cuối</div>
@@ -398,7 +414,6 @@
           <div id="tooltip" class="tooltip">
             <div class="tt-head" id="tt-year"></div>
             <div style="margin-bottom:4px;">Tài sản ròng tích lũy: <span class="tt-val" id="tt-val"></span></div>
-            <!-- BỔ SUNG HTML THIẾU Ở ĐÂY ĐỂ TRÁNH LỖI MẤT TOOLTIP -->
             <div id="tt-monthly-row" style="font-size: 13px; color: var(--text-dim)">
               <span id="tt-monthly-label">Tăng/giảm tài sản:</span> <span class="tt-val" id="tt-monthly-val"></span>
             </div>
@@ -475,7 +490,7 @@
       <button class="close-btn" onclick="closeSettings()">✕</button>
     </div>
 
-    <div class="actions" style="margin-bottom: 20px; border-bottom: 1px dashed var(--border); padding-bottom: 16px;">
+    <div class="actions" style="margin-bottom: 20px; border-bottom: 1px dashed var(--border); padding-bottom: 16px; display: flex; gap:10px;">
         <button class="btn bg-green" onclick="saveToXML()">💾 Lưu XML</button>
         <button class="btn bg-accent" onclick="document.getElementById('xml-upload').click()">📂 Mở XML</button>
         <input type="file" id="xml-upload" accept=".xml" style="display: none;" onchange="loadFromXML(event)" />
@@ -486,11 +501,10 @@
         <h3>💰 Vốn Đầu tư & Kinh doanh</h3>
         <div id="f-capex"></div>
         <div id="f-ownerEquity"></div> 
-        <div id="f-reserveFund"></div> <!-- MỤC MỚI: QUỸ DỰ PHÒNG -->
+        <div id="f-reserveFund"></div> 
         <div id="f-revenueMax"></div>
         <div id="f-opCost"></div>
         
-        <!-- HIỂN THỊ TỶ LỆ GÓP VỐN CỦA NĐT TRỰC QUAN TRONG SETTINGS -->
         <div class="miniinfo" style="margin-top: 16px;">
           <div class="row"><span>Tỷ lệ vốn NĐT / Tổng đầu tư</span><span id="mi-invRatio" style="color: var(--purple);"></span></div>
           <div class="row"><span>Doanh thu thuần TB / tháng</span><span id="mi-netRev" style="color: var(--green);"></span></div>
@@ -504,8 +518,12 @@
       
       <div class="subcard">
         <h3>🏠 Hợp đồng & Giá thuê nhà</h3>
+        <button class="btn-sm bg-amber" style="width:100%; margin-bottom:16px; padding: 10px;" onclick="setOwnedProperty()">🏠 Bấm vào đây nếu là Đất tự có (Miễn phí thuê)</button>
         <div id="f-contractYears"></div>
-        <div id="f-upfrontRentMonths"></div>
+        <div id="f-tenantPayFreq"></div> <!-- THÔNG SỐ MỚI THU TIỀN KHÁCH -->
+        <div id="f-rentPhase1Years"></div>
+        <div id="f-rentPhase1Freq"></div>
+        <div id="f-rentPhase2Freq"></div>
         <div class="field" style="margin-top: 16px; border-top: 1px dashed var(--border); padding-top: 16px;">
           <div class="field-top"><label>Giá thuê trả Chủ nhà (Tr.VNĐ/Th)</label></div>
           <div class="rent-grid" id="rent-grid-container"></div>
@@ -514,6 +532,13 @@
 
       <div class="subcard">
         <h3>🏦 Đòn bẩy Ngân hàng</h3>
+        <div class="field">
+          <div class="field-top"><label>Phương thức trả nợ</label></div>
+          <div class="radio-group">
+            <label><input type="radio" name="loanType" value="declining" checked onchange="updateLoanType('declining')"> Gốc đều (Lãi giảm dần theo dư nợ)</label>
+            <label><input type="radio" name="loanType" value="annuity" onchange="updateLoanType('annuity')"> Trả góp đều (Gốc & Lãi cố định hàng tháng)</label>
+          </div>
+        </div>
         <div id="f-loanAmount"></div>
         <div id="f-loanAmountActual"></div>
         <div id="f-ratePct"></div>
@@ -533,7 +558,6 @@
         <div class="miniinfo">
           <div class="row"><span>Tiền NĐT / tháng (Ưu tiên)</span><span id="mi-invMonthlyPref" style="color: var(--purple);"></span></div>
           <div class="row"><span>Tiền NĐT / tháng (Cổ phần)</span><span id="mi-invMonthlyNormal" style="color: var(--green);"></span></div>
-          <!-- ĐÃ FIX: KHÔI PHỤC HIỂN THỊ DỮ LIỆU CỦA NĐT -->
           <div class="row"><span>Tạm ứng thực nhận (GĐ 1)</span><span id="mi-invAdvance"></span></div>
           <div class="row"><span>Dự kiến NĐT nợ lại</span><span id="mi-invDebt" style="color: var(--red);"></span></div>
           <div class="row"><span>Tháng NĐT hết nợ cấn trừ</span><span id="mi-invCleared"></span></div>
@@ -551,8 +575,11 @@
 const state = {
   capex: 600000000, 
   ownerEquity: 0,
-  reserveFund: 0, // MỚI: Quỹ dự phòng
-  upfrontRentMonths: 12,
+  reserveFund: 0, 
+  tenantPayFreq: 1, // KỲ THU TIỀN KHÁCH THUÊ
+  rentPhase1Years: 2, 
+  rentPhase1Freq: 3, 
+  rentPhase2Freq: 12, 
   revenueMax: 42000000,
   opCost: 2500000,
   contractYears: 10,
@@ -560,8 +587,9 @@ const state = {
   loanAmountActual: 550000000,
   ratePct: 10.5,
   loanYears: 5,
-  rentSchedule: Array(25).fill(17000000),
-  occupancySchedule: Array(25).fill(90), 
+  loanType: 'declining', 
+  rentSchedule: Array(50).fill(17000000), 
+  occupancySchedule: Array(50).fill(90), 
   
   invCapital: 200000000,
   invPrefDiv: 0,
@@ -574,6 +602,15 @@ let currentMonthlyCashData = [];
 let currentMonthlyInvData = [];
 let currentMonthlyProjectData = [];
 let currentLoanSchedule = [];
+
+let currentCashView = 'real'; // Toggle state for Cashflow Tab
+
+function setCashView(mode) {
+    currentCashView = mode;
+    document.getElementById('btn-real').classList.toggle('active', mode === 'real');
+    document.getElementById('btn-smooth').classList.toggle('active', mode === 'smooth');
+    render();
+}
 
 /* ---------------- TABS & BOTTOM SHEET UI LOGIC ---------------- */
 function switchTab(tabId) {
@@ -593,6 +630,28 @@ function closeSettings() {
     document.getElementById('settings-panel').classList.remove('open');
     document.getElementById('overlay').classList.remove('open');
     document.body.style.overflow = '';
+}
+
+function updateLoanType(type) {
+    state.loanType = type;
+    render();
+}
+
+function setOwnedProperty() {
+    for(let i = 0; i < state.contractYears; i++) {
+        state.rentSchedule[i] = 0;
+        const el = document.querySelector(`.rent-input[data-year="${i}"]`);
+        if(el) el.value = 0;
+    }
+    state.rentPhase1Years = 0;
+    state.rentPhase1Freq = 1;
+    state.rentPhase2Freq = 1;
+    ['rentPhase1Years', 'rentPhase1Freq', 'rentPhase2Freq'].forEach(k => {
+        if(document.getElementById('range-'+k)) document.getElementById('range-'+k).value = state[k];
+        if(document.getElementById('num-'+k)) document.getElementById('num-'+k).value = state[k];
+    });
+    render();
+    alert("Đã thiết lập Đất Tự Có: Toàn bộ tiền thuê được đưa về 0.");
 }
 
 /* ---------------- File Manger (Save/Load XML) ---------------- */
@@ -648,6 +707,13 @@ function loadFromXML(event) {
                             const idx = parseInt(yearNodes[i].getAttribute("index"));
                             state[key][idx] = parseFloat(yearNodes[i].textContent);
                         }
+                    }
+                } else if (key === 'loanType') {
+                    const node = xmlDoc.getElementsByTagName(key)[0];
+                    if (node && node.textContent) {
+                        state.loanType = node.textContent;
+                        const radio = document.querySelector(`input[name="loanType"][value="${state.loanType}"]`);
+                        if(radio) radio.checked = true;
                     }
                 } else {
                     const node = xmlDoc.getElementsByTagName(key)[0];
@@ -754,20 +820,22 @@ document.getElementById("occ-grid-container").addEventListener("input", (e) => {
 /* ---------------- Thuật toán Tài chính ---------------- */
 function calcFinance(s) {
   let upfrontRentTotal = 0;
-  for (let m = 1; m <= s.upfrontRentMonths; m++) {
-    let yearIdx = Math.floor((m - 1) / 12);
-    if (yearIdx >= s.contractYears) yearIdx = s.contractYears - 1; 
-    upfrontRentTotal += s.rentSchedule[yearIdx];
+  let initialFreq = (s.rentPhase1Years >= 1) ? s.rentPhase1Freq : s.rentPhase2Freq;
+  if(s.rentPhase1Years === 0) initialFreq = s.rentPhase2Freq;
+
+  for (let i = 0; i < initialFreq; i++) {
+      let targetMonth = 1 + i;
+      if (targetMonth > s.contractYears * 12) break;
+      let targetYearIdx = Math.floor((targetMonth - 1) / 12);
+      upfrontRentTotal += s.rentSchedule[targetYearIdx];
   }
 
   // TỔNG VỐN ĐẦU TƯ BAN ĐẦU
   const totalProjectInvestment = s.capex + upfrontRentTotal;
 
-  // LƯỢNG TIỀN HUY ĐỘNG
   let actualLoanUsed = Math.min(s.loanAmountActual, s.loanAmount);
   let totalFundRaised = actualLoanUsed + s.invCapital + s.ownerEquity + s.reserveFund;
 
-  // THIẾU HỤT HOẶC DƯ THỪA TIỀN MẶT NGÀY 0
   let capitalShortfall = 0;
   let capitalSurplus = 0;
   if (totalFundRaised < totalProjectInvestment) {
@@ -776,25 +844,29 @@ function calcFinance(s) {
       capitalSurplus = totalFundRaised - totalProjectInvestment;
   }
 
-  // TỔNG RỦI RO CỦA CHỦ NHÀ
   const ownerTotalExposure = s.ownerEquity + s.reserveFund + actualLoanUsed + capitalShortfall;
 
-  // SỐ DƯ TIỀN MẶT KHỞI ĐIỂM
   let initialCashBalance = s.reserveFund + capitalSurplus - capitalShortfall;
   if (capitalShortfall > 0) initialCashBalance = s.reserveFund - capitalShortfall; 
 
   const totalLoanMonths = Math.round(s.loanYears * 12);
-  const monthlyPrincipal = totalLoanMonths > 0 ? s.loanAmount / totalLoanMonths : 0;
   const monthlyInterestRate = s.ratePct / 100 / 12;
+  
+  let fixedMonthlyPayment = 0;
+  if (s.loanType === 'annuity' && monthlyInterestRate > 0 && totalLoanMonths > 0) {
+      fixedMonthlyPayment = s.loanAmount * (monthlyInterestRate * Math.pow(1 + monthlyInterestRate, totalLoanMonths)) / (Math.pow(1 + monthlyInterestRate, totalLoanMonths) - 1);
+  }
 
   // Khởi tạo các mảng
   let ownerAssetCum = -ownerTotalExposure; 
-  let ownerCashCum = initialCashBalance;
+  let ownerCashCum_Real = initialCashBalance;
+  let ownerCashCum_Smooth = initialCashBalance;
   let invCum = -s.invCapital;
   let projectCum = -totalProjectInvestment;
   
   const monthlyOwnerAsset = [{ month: 0, value: ownerAssetCum, monthlyCF: 0 }];
-  const monthlyOwnerCash = [{ month: 0, value: ownerCashCum, monthlyCF: 0 }];
+  const monthlyOwnerCash_Real = [{ month: 0, value: ownerCashCum_Real, monthlyCF: 0 }];
+  const monthlyOwnerCash_Smooth = [{ month: 0, value: ownerCashCum_Smooth, monthlyCF: 0 }];
   const monthlyInvestor = [{ month: 0, value: invCum, monthlyCF: 0 }];
   const monthlyProject = [{ month: 0, value: projectCum, monthlyCF: 0 }];
   
@@ -812,46 +884,79 @@ function calcFinance(s) {
   let totalLoanPaid = 0; 
   let loanSchedule = [];
 
-  let minOwnerCF = Infinity;
-  let maxOwnerCF = -Infinity;
+  let minOwnerCF_Smooth = Infinity;
+  let maxOwnerCF_Smooth = -Infinity;
   let totalNetRevenue = 0;
+
+  let nextRentPaymentMonth = 1 + initialFreq;
+  let nextTenantPaymentMonth = 1;
 
   for (let m = 1; m <= totalMonths; m++) {
     let currentYearIdx = Math.floor((m - 1) / 12);
-    
     let currentOcc = s.occupancySchedule[currentYearIdx];
-    let monthlyRevenue = s.revenueMax * (currentOcc / 100);
-    let netRevenueMonthly = monthlyRevenue - s.opCost;
-    totalNetRevenue += netRevenueMonthly;
     
-    let futureMonth = m + s.upfrontRentMonths;
-    let rentCashOutflow = 0;
-    if (futureMonth <= totalMonths) {
-        let futureYearIdx = Math.floor((futureMonth - 1) / 12);
-        rentCashOutflow = s.rentSchedule[futureYearIdx];
+    // TÍNH TOÁN DOANH THU & PNL (Khấu hao đều)
+    let monthlyGrossRev = s.revenueMax * (currentOcc / 100);
+    let rentAmortized = s.rentSchedule[currentYearIdx];
+    let netRevenueMonthly_PnL = monthlyGrossRev - rentAmortized - s.opCost;
+    
+    totalNetRevenue += netRevenueMonthly_PnL;
+    projectCum += netRevenueMonthly_PnL;
+    monthlyProject.push({ month: m, value: projectCum, monthlyCF: netRevenueMonthly_PnL });
+
+    // TÍNH TOÁN DOANH THU TIỀN MẶT CỤC BỘ (Khách thuê trả theo kỳ)
+    let grossCashIn_Real = 0;
+    if (m === nextTenantPaymentMonth) {
+        let freq = s.tenantPayFreq;
+        for(let i=0; i<freq; i++) {
+            let tMonth = m + i;
+            if(tMonth > totalMonths) break;
+            let tYearIdx = Math.floor((tMonth - 1) / 12);
+            grossCashIn_Real += s.revenueMax * (s.occupancySchedule[tYearIdx] / 100);
+        }
+        nextTenantPaymentMonth = m + freq;
     }
 
-    // NOI - Góc nhìn dự án
-    let NOI = monthlyRevenue - rentCashOutflow - s.opCost;
-    projectCum += NOI;
-    monthlyProject.push({ month: m, value: projectCum, monthlyCF: NOI });
+    // TÍNH TOÁN CHI TIỀN NHÀ CỤC BỘ (Chủ nhà trả theo kỳ)
+    let rentCashOutflow_Real = 0;
+    if (m === nextRentPaymentMonth) {
+        let currentYearForFreq = Math.ceil(m / 12);
+        let freq = (currentYearForFreq <= s.rentPhase1Years) ? s.rentPhase1Freq : s.rentPhase2Freq;
+        for (let i = 0; i < freq; i++) {
+            let targetMonth = m + i;
+            if (targetMonth > totalMonths) break;
+            let targetYearIdx = Math.floor((targetMonth - 1) / 12);
+            rentCashOutflow_Real += s.rentSchedule[targetYearIdx];
+        }
+        nextRentPaymentMonth = m + freq;
+    }
+
+    // Lợi nhuận tiền mặt thực tế tháng này
+    let netRevenueMonthly_Cash_Real = grossCashIn_Real - rentCashOutflow_Real - s.opCost;
     
+    // --- NGÂN HÀNG ---
     let debtCashOutflow = 0;
     let interestPayment = 0;
     let principalPayment = 0;
 
     if (m <= totalLoanMonths && remainingPrincipal > 0) {
         interestPayment = remainingPrincipal * monthlyInterestRate;
-        principalPayment = monthlyPrincipal;
-        debtCashOutflow = principalPayment + interestPayment;
+        if (s.loanType === 'annuity') {
+            debtCashOutflow = fixedMonthlyPayment;
+            principalPayment = debtCashOutflow - interestPayment;
+            if (principalPayment > remainingPrincipal || m === totalLoanMonths) {
+                principalPayment = remainingPrincipal;
+                debtCashOutflow = principalPayment + interestPayment;
+            }
+        } else {
+            principalPayment = s.loanAmount / totalLoanMonths;
+            debtCashOutflow = principalPayment + interestPayment;
+        }
+
         totalLoanPaid += debtCashOutflow; 
-        
         loanSchedule.push({
-            month: m,
-            total: debtCashOutflow,
-            principal: principalPayment,
-            interest: interestPayment,
-            cumulativeTotal: totalLoanPaid
+            month: m, total: debtCashOutflow, principal: principalPayment,
+            interest: interestPayment, cumulativeTotal: totalLoanPaid
         });
 
         if (m === 1) firstMonthDebt = debtCashOutflow;
@@ -861,26 +966,23 @@ function calcFinance(s) {
         if (remainingPrincipal < 0) remainingPrincipal = 0;
     }
     
-    let projectCF_ForAsset = NOI - interestPayment; 
-    let projectCF_ForCash = NOI - debtCashOutflow; 
+    // --- Phân rã luồng tiền ---
+    let projectCF_ForAsset = netRevenueMonthly_PnL - interestPayment; 
+    let projectCF_ForInvestor = netRevenueMonthly_PnL - debtCashOutflow; // NĐT chia tiền dựa trên Khấu hao để mượt
 
-    let ownerCashFlow = 0;
-    let ownerAssetFlow = 0;
     let invCF = 0;
 
-    // --- LOGIC CLAWBACK TẠM ỨNG & CẤN TRỪ HỒI TỐ NĐT ---
+    // --- LOGIC CLAWBACK NĐT ---
     if (m <= s.invPrefMonths) {
         invCF = s.invPrefDiv;
-        ownerCashFlow = projectCF_ForCash - invCF;
-        ownerAssetFlow = projectCF_ForAsset - invCF;
         invActualReceived += invCF;
-        projectProfits_Pref += projectCF_ForCash; 
+        projectProfits_Pref += projectCF_ForInvestor; 
     } else {
         if (m === s.invPrefMonths + 1) {
             let targetInv = projectProfits_Pref * (s.invEquityPct / 100);
             invDebt = Math.max(0, invActualReceived - targetInv);
         }
-        let baseInvShare = projectCF_ForCash > 0 ? projectCF_ForCash * (s.invEquityPct / 100) : 0;
+        let baseInvShare = projectCF_ForInvestor > 0 ? projectCF_ForInvestor * (s.invEquityPct / 100) : 0;
 
         if (invDebt > 0 && baseInvShare > 0) {
             let deduction = Math.min(invDebt, baseInvShare);
@@ -890,30 +992,34 @@ function calcFinance(s) {
         } else {
             invCF = baseInvShare; 
         }
-        ownerCashFlow = projectCF_ForCash - invCF;
-        ownerAssetFlow = projectCF_ForAsset - invCF;
     }
 
+    // DÒNG TIỀN CHỦ NHÀ
+    let ownerAssetFlow = projectCF_ForAsset - invCF;
+    let ownerCashFlow_Smooth = projectCF_ForInvestor - invCF; // Smooth
+    let ownerCashFlow_Real = netRevenueMonthly_Cash_Real - debtCashOutflow - invCF; // Răng cưa
+
     if (m < totalMonths || totalMonths === 1) {
-        if (ownerCashFlow < minOwnerCF) minOwnerCF = ownerCashFlow;
-        if (ownerCashFlow > maxOwnerCF) maxOwnerCF = ownerCashFlow;
+        if (ownerCashFlow_Smooth < minOwnerCF_Smooth) minOwnerCF_Smooth = ownerCashFlow_Smooth;
+        if (ownerCashFlow_Smooth > maxOwnerCF_Smooth) maxOwnerCF_Smooth = ownerCashFlow_Smooth;
     }
 
     ownerAssetCum += ownerAssetFlow; 
-    ownerCashCum += ownerCashFlow;
+    ownerCashCum_Smooth += ownerCashFlow_Smooth;
+    ownerCashCum_Real += ownerCashFlow_Real;
     invCum += invCF;
 
-    monthlyOwnerAsset.push({ month: m, value: ownerAssetCum, monthlyCF: ownerAssetFlow });
-    monthlyOwnerCash.push({ month: m, value: ownerCashCum, monthlyCF: ownerCashFlow });
+    monthlyOwnerAsset.push({ month: m, value: ownerAssetCum, monthlyCF: ownerAssetFlow }); 
+    monthlyOwnerCash_Smooth.push({ month: m, value: ownerCashCum_Smooth, monthlyCF: ownerCashFlow_Smooth });   
+    monthlyOwnerCash_Real.push({ month: m, value: ownerCashCum_Real, monthlyCF: ownerCashFlow_Real });   
     monthlyInvestor.push({ month: m, value: invCum, monthlyCF: invCF });
   }
 
-  if (minOwnerCF === Infinity) minOwnerCF = 0;
-  if (maxOwnerCF === -Infinity) maxOwnerCF = 0;
+  if (minOwnerCF_Smooth === Infinity) minOwnerCF_Smooth = 0;
+  if (maxOwnerCF_Smooth === -Infinity) maxOwnerCF_Smooth = 0;
 
   let avgNetRevenue = totalMonths > 0 ? totalNetRevenue / totalMonths : 0;
 
-  // Tính Hòa Vốn Tài Sản Chủ Nhà
   let breakEvenMonth = null;
   for (let i = 1; i < monthlyOwnerAsset.length; i++) {
     const a = monthlyOwnerAsset[i - 1], b = monthlyOwnerAsset[i];
@@ -924,7 +1030,6 @@ function calcFinance(s) {
   }
   if (monthlyOwnerAsset[0].value >= 0) breakEvenMonth = 0;
 
-  // Tính Hòa Vốn NĐT
   let invBreakEvenMonth = null;
   if (s.invCapital > 0) {
       for (let i = 1; i < monthlyInvestor.length; i++) {
@@ -937,7 +1042,6 @@ function calcFinance(s) {
       if (monthlyInvestor[0].value >= 0) invBreakEvenMonth = 0;
   }
 
-  // Tính Hòa Vốn Dự Án
   let projectBreakEvenMonth = null;
   for (let i = 1; i < monthlyProject.length; i++) {
     const a = monthlyProject[i - 1], b = monthlyProject[i];
@@ -951,7 +1055,7 @@ function calcFinance(s) {
   let tempTargetInv = projectProfits_Pref * (s.invEquityPct / 100);
   let expectedDebt = Math.max(0, invActualReceived - tempTargetInv);
 
-  let ownerFinalCash = monthlyOwnerCash[monthlyOwnerCash.length - 1].value;
+  let ownerFinalCash = monthlyOwnerCash_Smooth[monthlyOwnerCash_Smooth.length - 1].value;
   let ownerFinalAsset = monthlyOwnerAsset[monthlyOwnerAsset.length - 1].value;
   let ownerROI = 0;
   let isInfiniteOwnerROI = false;
@@ -974,9 +1078,10 @@ function calcFinance(s) {
   return {
     totalProjectInvestment, capitalShortfall, capitalSurplus, ownerTotalExposure, actualLoanUsed,
     avgNetRevenue, firstMonthDebt, lastMonthDebt, totalLoanPaid, initialCashBalance, invCapitalRatio,
-    minOwnerCF, maxOwnerCF, invMonthlyPref: (s.invCapital > 0 ? s.invPrefDiv : 0), 
+    minOwnerCF: minOwnerCF_Smooth, maxOwnerCF: maxOwnerCF_Smooth, invMonthlyPref: (s.invCapital > 0 ? s.invPrefDiv : 0), 
     invNormalMonthly: (s.revenueMax - s.rentSchedule[0] - s.opCost) * (s.invEquityPct/100),
-    monthlyOwner: monthlyOwnerAsset, monthlyCash: monthlyOwnerCash, monthlyInvestor, monthlyProject, loanSchedule, 
+    monthlyOwner: monthlyOwnerAsset, monthlyCash_Real: monthlyOwnerCash_Real, monthlyCash_Smooth: monthlyOwnerCash_Smooth,
+    monthlyInvestor, monthlyProject, loanSchedule, 
     breakEven: breakEvenMonth !== null ? { month: breakEvenMonth, value: 0 } : null, 
     invBreakEven: invBreakEvenMonth !== null ? { month: invBreakEvenMonth, value: 0 } : null,
     projectBreakEven: projectBreakEvenMonth !== null ? { month: projectBreakEvenMonth, value: 0} : null,
@@ -988,36 +1093,42 @@ function calcFinance(s) {
 
 /* ---------------- Field definitions ---------------- */
 const fieldDefs = {
-  capex: { label: "Vốn Cải tạo cốt lõi (Capex)", min: 100000000, max: 6000000000, sliderStep: 10000000,
-    money: true, inputStep: 1, inputMin: 100, inputMax: 6000 },
-  ownerEquity: { label: "Vốn tự có (Không vay/NĐT)", min: 0, max: 6000000000, sliderStep: 10000000,
-    money: true, inputStep: 1, inputMin: 0, inputMax: 6000 },
-  reserveFund: { label: "Quỹ dự phòng ban đầu", min: 0, max: 1000000000, sliderStep: 5000000,
-    money: true, inputStep: 0.5, inputMin: 0, inputMax: 1000 }, 
-  upfrontRentMonths: { label: "Số tháng đóng tiền nhà", min: 0, max: 24, sliderStep: 1,
-    money: false, unitSuffix: " tháng", inputStep: 1, inputMin: 0, inputMax: 24 },
-  contractYears: { label: "Chu kỳ hợp đồng (Năm)", min: 1, max: 15, sliderStep: 1,
-    money: false, unitSuffix: " năm", inputStep: 1, inputMin: 1, inputMax: 15 },
-  revenueMax: { label: "Doanh thu 100% / tháng", min: 0, max: 100000000, sliderStep: 500000,
-    money: true, inputStep: 0.5, inputMin: 0, inputMax: 100 },
-  opCost: { label: "Phí vận hành / tháng", min: 0, max: 20000000, sliderStep: 100000,
-    money: true, inputStep: 0.1, inputMin: 0, inputMax: 20 },
-    
-  loanAmount: { label: "Vay Ngân hàng (Tổng nợ)", min: 0, max: 6000000000, sliderStep: 10000000,
-    money: true, inputStep: 1, inputMin: 0, inputMax: 6000 },
-  loanAmountActual: { label: "↳ Thực chi vào Dự án", min: 0, max: 6000000000, sliderStep: 10000000,
-    money: true, inputStep: 1, inputMin: 0, inputMax: 6000 },
-  ratePct: { label: "Lãi suất vay / năm", min: 5, max: 15, sliderStep: 0.1,
-    money: false, unitSuffix: "%", inputStep: 0.1, inputMin: 5, inputMax: 15 },
-  loanYears: { label: "Thời hạn vay", min: 1, max: 10, sliderStep: 1,
-    money: false, unitSuffix: " năm", inputStep: 1, inputMin: 1, inputMax: 10 },
-
-  invCapital: { label: "Vốn góp của NĐT", min: 0, max: 6000000000, sliderStep: 10000000,
-    money: true, inputStep: 1, inputMin: 0, inputMax: 6000 },
-  invPrefDiv: { label: "Tạm ứng ưu tiên / tháng", min: 0, max: 50000000, sliderStep: 500000,
+  capex: { label: "Vốn Cải tạo cốt lõi (Capex)", min: 100000000, max: 20000000000, sliderStep: 50000000,
+    money: true, inputStep: 1, inputMin: 100, inputMax: 20000 },
+  ownerEquity: { label: "Vốn tự có (Không vay/NĐT)", min: 0, max: 20000000000, sliderStep: 50000000,
+    money: true, inputStep: 1, inputMin: 0, inputMax: 20000 },
+  reserveFund: { label: "Quỹ dự phòng ban đầu", min: 0, max: 2000000000, sliderStep: 10000000,
+    money: true, inputStep: 0.5, inputMin: 0, inputMax: 2000 }, 
+  tenantPayFreq: { label: "Kỳ thu tiền Khách thuê", min: 1, max: 12, sliderStep: 1, 
+    money: false, unitSuffix: " tháng/lần", inputStep: 1, inputMin: 1, inputMax: 12 },
+  rentPhase1Years: { label: "Số năm GĐ1 (Ưu tiên)", min: 0, max: 50, sliderStep: 1, 
+    money: false, unitSuffix: " năm", inputStep: 1, inputMin: 0, inputMax: 50 },
+  rentPhase1Freq: { label: "Kỳ thanh toán nhà GĐ1", min: 1, max: 60, sliderStep: 1, 
+    money: false, unitSuffix: " tháng/lần", inputStep: 1, inputMin: 1, inputMax: 60 },
+  rentPhase2Freq: { label: "Kỳ thanh toán nhà GĐ2", min: 1, max: 60, sliderStep: 1, 
+    money: false, unitSuffix: " tháng/lần", inputStep: 1, inputMin: 1, inputMax: 60 },
+  contractYears: { label: "Chu kỳ hợp đồng (Năm)", min: 1, max: 50, sliderStep: 1, 
+    money: false, unitSuffix: " năm", inputStep: 1, inputMin: 1, inputMax: 50 },
+  revenueMax: { label: "Doanh thu 100% / tháng", min: 0, max: 500000000, sliderStep: 1000000,
+    money: true, inputStep: 1, inputMin: 0, inputMax: 500 },
+  opCost: { label: "Phí vận hành / tháng", min: 0, max: 50000000, sliderStep: 500000,
     money: true, inputStep: 0.5, inputMin: 0, inputMax: 50 },
-  invPrefMonths: { label: "Số tháng ưu tiên", min: 0, max: 60, sliderStep: 1,
-    money: false, unitSuffix: " tháng", inputStep: 1, inputMin: 0, inputMax: 60 },
+    
+  loanAmount: { label: "Vay Ngân hàng (Tổng nợ)", min: 0, max: 20000000000, sliderStep: 50000000,
+    money: true, inputStep: 1, inputMin: 0, inputMax: 20000 },
+  loanAmountActual: { label: "↳ Thực chi vào Dự án", min: 0, max: 20000000000, sliderStep: 50000000,
+    money: true, inputStep: 1, inputMin: 0, inputMax: 20000 },
+  ratePct: { label: "Lãi suất vay / năm", min: 5, max: 20, sliderStep: 0.1,
+    money: false, unitSuffix: "%", inputStep: 0.1, inputMin: 5, inputMax: 20 },
+  loanYears: { label: "Thời hạn vay", min: 1, max: 35, sliderStep: 1,
+    money: false, unitSuffix: " năm", inputStep: 1, inputMin: 1, inputMax: 35 },
+
+  invCapital: { label: "Vốn góp của NĐT", min: 0, max: 10000000000, sliderStep: 20000000,
+    money: true, inputStep: 1, inputMin: 0, inputMax: 10000 },
+  invPrefDiv: { label: "Tạm ứng ưu tiên / tháng", min: 0, max: 100000000, sliderStep: 1000000,
+    money: true, inputStep: 1, inputMin: 0, inputMax: 100 },
+  invPrefMonths: { label: "Số tháng ưu tiên", min: 0, max: 120, sliderStep: 1,
+    money: false, unitSuffix: " tháng", inputStep: 1, inputMin: 0, inputMax: 120 },
   invEquityPct: { label: "Cổ phần Giai đoạn 2", min: 0, max: 100, sliderStep: 1,
     money: false, unitSuffix: "%", inputStep: 1, inputMin: 0, inputMax: 100 }
 };
@@ -1232,7 +1343,7 @@ function render() {
 
   const result = calcFinance(state);
   currentMonthlyData = result.monthlyOwner; 
-  currentMonthlyCashData = result.monthlyCash; 
+  currentMonthlyCashData = currentCashView === 'real' ? result.monthlyCash_Real : result.monthlyCash_Smooth; 
   currentMonthlyInvData = result.monthlyInvestor;
   currentMonthlyProjectData = result.monthlyProject;
   currentLoanSchedule = result.loanSchedule;
@@ -1320,7 +1431,6 @@ function render() {
   document.getElementById("c0-pill").style.background = t0.bg;
   document.getElementById("c0-pill").style.color = t0.fg;
 
-  // HIỂN THỊ ĐÚNG LỢI NHUẬN RÒNG (FINAL CASH)
   const t2 = toneOf(result.finalCash);
   document.getElementById("c2-value").textContent = fmtTrieu(result.finalCash);
   document.getElementById("c2-value").style.color = t2.fg;
@@ -1328,9 +1438,10 @@ function render() {
   document.getElementById("c2-pill").style.background = t2.bg;
   document.getElementById("c2-pill").style.color = t2.fg;
 
-  const debtStr = state.loanAmount > 0 ? `${fmtTrieu(result.firstMonthDebt)} → ${fmtTrieu(result.lastMonthDebt)}` : "Không vay";
+  const debtStr = state.loanAmount > 0 ? (state.loanType === 'annuity' ? `Cố định ${fmtTrieu(result.firstMonthDebt)}/th` : `${fmtTrieu(result.firstMonthDebt)} → ${fmtTrieu(result.lastMonthDebt)}`) : "Không vay";
   document.getElementById("c3-value").textContent = debtStr;
   document.getElementById("c3-value").style.fontSize = state.loanAmount > 0 ? "20px" : "24px";
+  document.getElementById("c3-sub").textContent = state.loanType === 'annuity' && state.loanAmount > 0 ? "Gốc & Lãi bằng nhau mỗi tháng" : "Tháng đầu tiên → Tháng cuối";
 
   if (Math.abs(result.maxOwnerCF - result.minOwnerCF) < 100000 || state.loanAmount === 0) {
       const c4 = toneOf(result.minOwnerCF);
@@ -1369,7 +1480,7 @@ function render() {
     document.getElementById("proj-be-pill").textContent = `Hòa vốn Toàn dự án: ${beYears} năm ${beMonths} tháng`;
   } else { document.getElementById("proj-be-pill").textContent = ""; }
 
-  // Chart 1 (Chủ nhà - Asset) - ĐÃ FIX BIẾN TẠI ĐÂY
+  // Chart 1 (Chủ nhà - Asset)
   const ownerFinalAsset = result.finalAsset;
   const tOwnerStat = toneOf(ownerFinalAsset);
   document.getElementById("ch1-stat").textContent = fmtTrieu(ownerFinalAsset);
@@ -1428,9 +1539,8 @@ function render() {
     document.getElementById("df-pill").style.display = "inline-block";
   } else { document.getElementById("df-pill").style.display = "none"; }
 
-
   // Render SVGs
-  const cashRes = buildGenericChartSVG(result.monthlyCash, null, state.contractYears, null, "var(--green)", "var(--green-soft)", "cash", "var(--amber)");
+  const cashRes = buildGenericChartSVG(currentMonthlyCashData, null, state.contractYears, null, "var(--green)", "var(--green-soft)", "cash", "var(--amber)");
   window._cashChartLayout = cashRes.layout;
   document.getElementById("cash-chart").innerHTML = cashRes.svg;
 
