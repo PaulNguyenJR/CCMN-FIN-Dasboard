@@ -969,9 +969,44 @@ function calcFinance(s) {
     monthlyInvestor.push({ month: m, value: invCum, monthlyCF: invCF });
   }
 
+  // const totalOperatingMonths = totalMonths - s.constructionMonths;
+  // let breakEvenMonth = null; for (let i = 1; i < monthlyOwnerAsset.length; i++) { if (monthlyOwnerAsset[i - 1].value < 0 && monthlyOwnerAsset[i].value >= 0) { breakEvenMonth = monthlyOwnerAsset[i - 1].month + (-monthlyOwnerAsset[i - 1].value / (monthlyOwnerAsset[i].value - monthlyOwnerAsset[i - 1].value)); break; } }
+  // if (monthlyOwnerAsset[0].value >= 0) breakEvenMonth = 0;
+
+  // return {
+  //   initialCost, capitalShortfall, ownerTotalExposure, actualLoanUsed,
+  //   avgGrossNetRev: totalOperatingMonths > 0 ? totalGrossNetRev / totalOperatingMonths : 0, 
+  //   avgNOI: totalMonths > 0 ? totalNOI / totalMonths : 0, 
+  //   firstMonthDebt, lastMonthDebt, totalLoanPaid, initialCashBalance: startingCash, 
+  //   minOwnerCF: minOwnerCF_Smooth === Infinity ? 0 : minOwnerCF_Smooth, 
+  //   maxOwnerCF: maxOwnerCF_Smooth === -Infinity ? 0 : maxOwnerCF_Smooth, 
+  //   invMonthlyPref: (s.invCapital > 0 ? s.invPrefDiv : 0), 
+  //   invNormalMonthly: (s.revenueMax - s.rentSchedule[0] - s.opCost) * (s.invEquityPct/100),
+  //   monthlyOwner: monthlyOwnerAsset, monthlyCash_Real: monthlyOwnerCash_Real, monthlyCash_Smooth: monthlyOwnerCash_Smooth, monthlyInvestor, monthlyProject, loanSchedule, 
+  //   breakEven: breakEvenMonth !== null ? { month: breakEvenMonth, value: 0 } : null, 
+  //   finalCash: monthlyOwnerCash_Smooth[monthlyOwnerCash_Smooth.length - 1].value, 
+  //   finalAsset: monthlyOwnerAsset[monthlyOwnerAsset.length - 1].value,
+  //   ownerROI: ownerTotalExposure > 0 ? (monthlyOwnerAsset[monthlyOwnerAsset.length - 1].value / ownerTotalExposure) * 100 : 0, 
+  //   invROI: s.invCapital > 0 ? (monthlyInvestor[monthlyInvestor.length - 1].value / s.invCapital) * 100 : 0, 
+  //   projectFinalProfit: monthlyProject[monthlyProject.length - 1].value, 
+  //   projectROI: initialCost > 0 ? (monthlyProject[monthlyProject.length - 1].value / initialCost) * 100 : 0,
+  //   invActualReceived, expectedDebt: Math.max(0, invActualReceived - (projectProfits_Pref * (s.invEquityPct / 100))), invClearedMonth, invCapitalRatio: initialCost > 0 ? (s.invCapital / initialCost) * 100 : 0
+  // };
   const totalOperatingMonths = totalMonths - s.constructionMonths;
   let breakEvenMonth = null; for (let i = 1; i < monthlyOwnerAsset.length; i++) { if (monthlyOwnerAsset[i - 1].value < 0 && monthlyOwnerAsset[i].value >= 0) { breakEvenMonth = monthlyOwnerAsset[i - 1].month + (-monthlyOwnerAsset[i - 1].value / (monthlyOwnerAsset[i].value - monthlyOwnerAsset[i - 1].value)); break; } }
   if (monthlyOwnerAsset[0].value >= 0) breakEvenMonth = 0;
+
+  // PHỤC HỒI LOGIC TÌM ĐIỂM HÒA VỐN BỊ XÓA NHẦM
+  let invBreakEvenMonth = null;
+  if (s.invCapital > 0) {
+      for (let i = 1; i < monthlyInvestor.length; i++) { if (monthlyInvestor[i - 1].value < 0 && monthlyInvestor[i].value >= 0 && (monthlyInvestor[i].value - monthlyInvestor[i - 1].value) > 0) { invBreakEvenMonth = monthlyInvestor[i - 1].month + (-monthlyInvestor[i - 1].value / (monthlyInvestor[i].value - monthlyInvestor[i - 1].value)); break; } }
+      if (monthlyInvestor[0].value >= 0) invBreakEvenMonth = 0;
+  }
+
+  let projectBreakEvenMonth = null;
+  for (let i = 1; i < monthlyProject.length; i++) { if (monthlyProject[i - 1].value < 0 && monthlyProject[i].value >= 0) { projectBreakEvenMonth = monthlyProject[i - 1].month + (-monthlyProject[i - 1].value / (monthlyProject[i].value - monthlyProject[i - 1].value)); break; } }
+
+  let debtClearedMonth = (s.loanAmount > 0 && totalLoanMonths > 0) ? Math.min(totalLoanMonths, totalMonths) : null;
 
   return {
     initialCost, capitalShortfall, ownerTotalExposure, actualLoanUsed,
@@ -984,6 +1019,9 @@ function calcFinance(s) {
     invNormalMonthly: (s.revenueMax - s.rentSchedule[0] - s.opCost) * (s.invEquityPct/100),
     monthlyOwner: monthlyOwnerAsset, monthlyCash_Real: monthlyOwnerCash_Real, monthlyCash_Smooth: monthlyOwnerCash_Smooth, monthlyInvestor, monthlyProject, loanSchedule, 
     breakEven: breakEvenMonth !== null ? { month: breakEvenMonth, value: 0 } : null, 
+    invBreakEven: invBreakEvenMonth !== null ? { month: invBreakEvenMonth, value: 0 } : null, 
+    projectBreakEven: projectBreakEvenMonth !== null ? { month: projectBreakEvenMonth, value: 0} : null, 
+    debtClearedMonth, 
     finalCash: monthlyOwnerCash_Smooth[monthlyOwnerCash_Smooth.length - 1].value, 
     finalAsset: monthlyOwnerAsset[monthlyOwnerAsset.length - 1].value,
     ownerROI: ownerTotalExposure > 0 ? (monthlyOwnerAsset[monthlyOwnerAsset.length - 1].value / ownerTotalExposure) * 100 : 0, 
@@ -992,6 +1030,7 @@ function calcFinance(s) {
     projectROI: initialCost > 0 ? (monthlyProject[monthlyProject.length - 1].value / initialCost) * 100 : 0,
     invActualReceived, expectedDebt: Math.max(0, invActualReceived - (projectProfits_Pref * (s.invEquityPct / 100))), invClearedMonth, invCapitalRatio: initialCost > 0 ? (s.invCapital / initialCost) * 100 : 0
   };
+}
 }
 
 /* ---------------- SVG RENDER ---------------- */
