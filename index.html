@@ -1031,7 +1031,6 @@ function calcFinance(s) {
     invActualReceived, expectedDebt: Math.max(0, invActualReceived - (projectProfits_Pref * (s.invEquityPct / 100))), invClearedMonth, invCapitalRatio: initialCost > 0 ? (s.invCapital / initialCost) * 100 : 0
   };
 }
-}
 
 /* ---------------- SVG RENDER ---------------- */
 function buildGenericChartSVG(monthlyData, breakEven, contractYears, constructionMonths, debtClearedMonth, colorCode, colorSoft, colorId, beColor = null) {
